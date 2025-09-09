@@ -12,42 +12,85 @@
     }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+
     .app{display:grid;grid-template-columns:320px 1fr;grid-template-rows:auto 1fr;gap:12px;height:100%}
     header{grid-column:1/-1;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
     header h1{margin:0;font-size:18px}
     header small{color:var(--muted)}
-    aside{padding:12px;background:var(--panel);border-right:1px solid var(--border);overflow:auto}
+    .btn{background:#0e141c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer}
+    .btn:hover{border-color:#2c3e55}
+
+    aside.side{padding:12px;background:var(--panel);border-right:1px solid var(--border);overflow:auto}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
     .card{background:#0e141c;border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
     .card:hover{outline:1px solid #29415a}
     .card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#000}
     .card .meta{padding:6px 8px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:8px}
+
     .viewer{position:relative;background:#000;border-radius:12px;overflow:hidden;margin:0 12px 12px 0}
     model-viewer{width:100%;height:100%;min-height:560px;--poster-color:transparent}
+
     .palette{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(10,14,20,.85);backdrop-filter:blur(4px);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;overflow:auto}
     .swatches{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .swatch{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex:0 0 auto;display:inline-block}
-    .swatch[title]{position:relative}
+    .swchip{display:flex;flex-direction:column;align-items:center;gap:4px}
+    .swatch{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);cursor:pointer;flex:0 0 auto;display:inline-block;background-size:cover;background-position:center}
     .swatch:hover{outline:1px solid var(--accent)}
-    .chip{border:1px solid var(--border);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);cursor:pointer}
-    .spacer{flex:1 1 auto}
-    .hint{color:var(--muted);font-size:12px}
-  
-.swchip{display:flex;flex-direction:column;align-items:center;gap:4px}
-.slabel{font-size:10px;color:var(--muted);max-width:72px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .slabel{font-size:10px;color:var(--muted);max-width:72px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-</style>
+    .hint{color:var(--muted);font-size:12px}
+    .spacer{flex:1 1 auto}
+    .only-mobile{display:none}
+
+    /* BG renk tekerleği */
+    .bgbox{display:flex;align-items:center;gap:10px}
+    .wheelWrap{position:relative; width:128px; height:128px; flex:0 0 auto}
+    canvas#bgWheel{width:128px;height:128px;border:1px solid var(--border);border-radius:50%}
+    .bgPreview{width:28px;height:28px;border-radius:6px;border:1px solid var(--border)}
+    input[type="range"]{accent-color:var(--accent)}
+
+    /* Overlay (mobil menü için) */
+    .overlay{position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:40}
+
+    /* Mobil uyarlamalar */
+    @media (max-width: 900px){
+      .only-mobile{display:inline-flex}
+      .app{grid-template-columns:1fr; grid-template-rows:auto 1fr}
+      aside.side{
+        position:fixed; z-index:50; top:0; left:0; bottom:0;
+        width:min(84vw, 360px); transform:translateX(-105%);
+        transition:transform .28s ease; border-right:1px solid var(--border);
+        box-shadow:0 10px 30px rgba(0,0,0,.4);
+      }
+      aside.side.open{ transform:translateX(0) }
+      model-viewer{ min-height:65vh }
+      .palette{ position:static; margin:8px 12px; overflow-x:auto }
+      .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px }
+      .swatch{ width:36px; height:36px; border-radius:8px }
+      .btn{ padding:10px 12px }
+    }
+    @media (max-width: 420px){ model-viewer{ min-height:70vh } }
+    @supports(padding:max(0px)){
+      header{ padding-left:max(12px, env(safe-area-inset-left)); padding-right:max(12px, env(safe-area-inset-right)) }
+      .palette{ padding-bottom:max(10px, env(safe-area-inset-bottom)) }
+    }
+  </style>
 </head>
 <body>
   <div class="app">
     <header>
+      <button id="menuBtn" class="btn only-mobile" aria-label="Menüyü aç/kapat">☰</button>
       <h1>PanelModels</h1>
-      <small class="hint">Galeri + Malzeme paleti</small>
+      <small class="hint">Galeri • Malzeme paleti • BG renk tekerleği</small>
+      <div class="spacer"></div>
+      <button id="fsBtn" class="btn only-mobile" aria-label="Tam ekran">⤢</button>
     </header>
-    <aside>
+
+    <aside id="side" class="side">
       <div id="gallery" class="grid"></div>
     </aside>
-    <main class="viewer">
+    <div id="overlay" class="overlay" hidden></div>
+
+    <main class="viewer" id="viewerHost">
       <model-viewer id="mv"
         camera-controls
         shadow-intensity="0.8"
@@ -56,19 +99,32 @@
         ar-modes="webxr scene-viewer quick-look"
         touch-action="pan-y"
         reveal="auto"
-        environment-visibility="neutral"
         alt="3B model görüntüleyici">
         <div class="hint" slot="poster">Model yükleniyor…</div>
         <div class="hint" slot="progress-bar">Yükleniyor…</div>
-        <button class="chip" slot="ar-button">AR ile Gör</button>
+        <button class="btn" slot="ar-button">AR ile Gör</button>
       </model-viewer>
 
-      <!-- Palette -->
+      <!-- Palet + BG Renk Tekerleği -->
       <div class="palette">
         <span class="hint">Kaplama / Renk:</span>
         <div id="swatches" class="swatches"></div>
         <div class="spacer"></div>
-        <span id="applyInfo" class="hint"></span>
+
+        <!-- BG renk tekerleği -->
+        <div class="bgbox">
+          <div class="wheelWrap">
+            <canvas id="bgWheel" width="256" height="256"></canvas>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="hint">Arka plan parlaklık</div>
+            <input id="bgV" type="range" min="20" max="100" value="80">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div id="bgPrev" class="bgPreview"></div>
+              <button id="bgReset" class="btn">Varsayılan</button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -78,9 +134,9 @@
   const mv = document.getElementById('mv');
   const gallery = document.getElementById('gallery');
   const swatches = document.getElementById('swatches');
-  const applyInfo = document.getElementById('applyInfo');
+  const host = document.getElementById('viewerHost');
 
-  // Load catalog (prefer catalog.json, fallback to files.json)
+  /* ---------- KATALOG / PALET YÜKLE ---------- */
   let catalog = null;
   try {
     const r = await fetch('catalog.json', {cache:'no-store'});
@@ -100,7 +156,21 @@
     return;
   }
 
-  // Render gallery
+  let palette = null;
+  try {
+    const r = await fetch('materials/palette.json', {cache:'no-store'});
+    if(r.ok){ palette = await r.json(); }
+  } catch {}
+  if(!Array.isArray(palette)){
+    palette = [
+      {"name":"Antrasit","#":"##2F343A".replace('##','#')},
+      {"name":"Teak Doku","texture":"materials/teak.png"},
+      {"name":"Beyaz","#":"#ECEFF1"},
+      {"name":"Siyah","#":"#121212"}
+    ];
+  }
+
+  /* ---------- GALERİ ---------- */
   function renderGallery(items){
     gallery.innerHTML = '';
     items.forEach(item => {
@@ -113,140 +183,217 @@
       gallery.appendChild(card);
     });
   }
-
   renderGallery(catalog);
 
-  async function loadModel(item){
+  function loadModel(item){
     mv.src = item.src;
     mv.alt = item.title || item.name || item.src;
+    mv.dataset.target = (item.targetMaterials || []).join(','); // sadece burada belirtilen malzemelere uygula
     document.title = 'PanelModels — ' + mv.alt;
-    // Optional: remember material target names
-    mv.dataset.target = Array.isArray(item.targetMaterials) ? item.targetMaterials.join(',') : '';
   }
 
-  // Palette
-  let palette = null;
-  try {
-    const r = await fetch('materials/palette.json', {cache:'no-store'});
-    if(r.ok){ palette = await r.json(); }
-  } catch {}
-  if(!Array.isArray(palette)){
-    palette = [
-      {"name":"Antrasit","#":"#2F343A"},
-      {"name":"Ada Yeşili","#":"#5E7D6A"},
-      {"name":"Teak Doku","texture":"materials/teak.png"},
-      {"name":"Ceviz Doku","texture":"materials/walnut.png"},
-      {"name":"Beyaz","#":"#ECEFF1"},
-      {"name":"Siyah","#":"#121212"}
-    ];
+  /* ---------- MALZEME SEÇİMİ ---------- */
+  function getTargetMaterials(){
+    const names = (mv.dataset.target || '')
+      .split(',').map(s=>s.trim()).filter(Boolean);
+    const all = mv.model?.materials || [];
+    if (names.length === 0) return all; // katalog hedef vermezse bilinçli olarak hepsi
+    const picked = all.filter(m =>
+      names.some(n => m.name === n || m.name.startsWith(n + '.')) // PanelKaplama.001 yakala
+    );
+    if (!picked.length) console.warn('Hedef malzeme bulunamadı:', all.map(m=>m.name));
+    return picked;
   }
 
-function hexToRgba(hex){
-  const s = hex.replace('#','');
-  const h = s.length===3 ? s.split('').map(c=>c+c).join('') : s;
-  const v = parseInt(h, 16);
-  return [(v>>16&255)/255, (v>>8&255)/255, (v&255)/255, 1];
-}
-
-async function applyColor(hex){
-  const mv = document.getElementById('mv');
-  if(!mv.model) return;
-  const mats = getTargetMaterials();
-  const rgba = hexToRgba(hex);
-  for (const mat of mats) {
-    try {
-      const pmr = mat.pbrMetallicRoughness;
-      // Dokuyu temizle ki renk görünsün
-      if (mat.setBaseColorTexture) mat.setBaseColorTexture(null);
-      else if (pmr?.baseColorTexture) pmr.baseColorTexture.setTexture(null);
-      // Rengi ver
-      if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor(rgba);
-      else pmr.baseColorFactor = rgba;
-    } catch (e) { console.warn('applyColor:', e); }
+  function hexToRgba(hex){
+    const s = hex.replace('#','');
+    const h = s.length===3 ? s.split('').map(c=>c+c).join('') : s;
+    const v = parseInt(h, 16);
+    return [(v>>16&255)/255, (v>>8&255)/255, (v&255)/255, 1];
   }
-  applyInfo.textContent = 'Renk uygulandı';
-  setTimeout(()=> applyInfo.textContent='', 1000);
-}
 
-async function applyTexture(url){
-  const mv = document.getElementById('mv');
-  if(!mv.model) return;
-  const mats = getTargetMaterials();
-  const tex = await mv.createTexture(url); // aynı origin → CORS sorunsuz
-  for (const mat of mats) {
-    try {
-      const pmr = mat.pbrMetallicRoughness;
-      // Olabilecek renk tint’ini sıfırla ki doku orijinal görünsün
-      if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor([1,1,1,1]);
-      else pmr.baseColorFactor = [1,1,1,1];
-      // Dokuyu set et — en sağlam yol: material seviyesinde
-      if (mat.setBaseColorTexture) { 
-        mat.setBaseColorTexture(tex);
-      } else if (pmr?.setBaseColorTexture) {
-        pmr.setBaseColorTexture(tex);
-      } else if (pmr?.baseColorTexture) {
-        pmr.baseColorTexture.setTexture(tex);
-      }
-    } catch (e) { console.warn('applyTexture:', e); }
+  async function applyColor(hex){
+    if(!mv.model) return;
+    const mats = getTargetMaterials();
+    const rgba = hexToRgba(hex);
+    for (const mat of mats) {
+      try {
+        const pmr = mat.pbrMetallicRoughness;
+        // varsa dokuyu temizle ki renk görünsün
+        if (mat.setBaseColorTexture) mat.setBaseColorTexture(null);
+        else if (pmr?.baseColorTexture) pmr.baseColorTexture.setTexture(null);
+        if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor(rgba);
+        else pmr.baseColorFactor = rgba;
+      } catch (e) { console.warn('applyColor:', e); }
+    }
+    flashInfo('Renk uygulandı');
   }
-  applyInfo.textContent = 'Doku uygulandı';
-  setTimeout(()=> applyInfo.textContent='', 1000);
-}
 
-function loadModel(item){
-  mv.src = item.src;
-  mv.alt = item.title || item.name || item.src;
-  mv.dataset.target = (item.targetMaterials || []).join(','); // <-- BUNUN OLMASI ŞART
-  document.title = 'PanelModels — ' + mv.alt;
-}
+  async function applyTexture(url){
+    if(!mv.model) return;
+    const tex = await mv.createTexture(url);
+    const mats = getTargetMaterials();
+    for (const mat of mats) {
+      try {
+        const pmr = mat.pbrMetallicRoughness;
+        // renk tint’ini sıfırla ki doku orijinal görünsün
+        if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor([1,1,1,1]);
+        else pmr.baseColorFactor = [1,1,1,1];
+        if (mat.setBaseColorTexture) { mat.setBaseColorTexture(tex); }
+        else if (pmr?.setBaseColorTexture) { pmr.setBaseColorTexture(tex); }
+        else if (pmr?.baseColorTexture) { pmr.baseColorTexture.setTexture(tex); }
+      } catch (e) { console.warn('applyTexture:', e); }
+    }
+    flashInfo('Doku uygulandı');
+  }
 
+  function renderPalette(items){
+    swatches.innerHTML = '';
+    items.forEach(it => {
+      const wrap = document.createElement('div');
+      wrap.className = 'swchip';
 
+      const el = document.createElement('span');
+      el.className = 'swatch';
+      if(it['#']) el.style.background = it['#'];
+      if(it.texture) el.style.backgroundImage = 'url('+it.texture+')';
+      el.title = it.name || '';
+      el.addEventListener('click', ()=> it.texture ? applyTexture(it.texture) : applyColor(it['#']));
 
+      const lbl = document.createElement('div');
+      lbl.className = 'slabel';
+      lbl.textContent = it.name || '';
 
-function getTargetMaterials(){
-  const mv = document.getElementById('mv');
-  const names = (mv.dataset.target || '')
-    .split(',').map(s=>s.trim()).filter(Boolean);
-
-  const all = mv.model?.materials || [];
-  if (names.length === 0) return all; // katalogta hedef verilmemişse bilinçli olarak hepsi
-
-  const picked = all.filter(m =>
-    names.some(n => m.name === n || m.name.startsWith(n + '.')) // PanelKaplama.001 vb. yakala
-  );
-  if (!picked.length) console.warn('Hedef malzeme bulunamadı:', all.map(m=>m.name));
-  return picked;
-}
-
-
-function renderPalette(items){
-  swatches.innerHTML = '';
-  items.forEach(it => {
-    const wrap = document.createElement('div');
-    wrap.className = 'swchip';
-
-    const el = document.createElement('span');
-    el.className = 'swatch';
-    if(it['#']) el.style.background = it['#'];
-    if(it.texture) el.style.backgroundImage = 'url('+it.texture+')';
-    el.title = it.name || '';
-    el.addEventListener('click', ()=> it.texture ? applyTexture(it.texture) : applyColor(it['#']));
-
-    const lbl = document.createElement('div');
-    lbl.className = 'slabel';
-    lbl.textContent = it.name || '';
-
-    wrap.appendChild(el);
-    wrap.appendChild(lbl);
-    swatches.appendChild(wrap);
-  });
-}
-
+      wrap.appendChild(el);
+      wrap.appendChild(lbl);
+      swatches.appendChild(wrap);
+    });
+  }
   renderPalette(palette);
 
-  // Load first model by default
-  loadModel(catalog[0]);
+  mv.addEventListener('load', ()=> {
+    console.log('Materials:', (mv.model?.materials||[]).map(m=>m.name));
+  });
 
-})();</script>
+  /* ---------- BG RENK TEKERLEĞİ (HSV teker + V slider) ---------- */
+  const bgWheel = document.getElementById('bgWheel');
+  const bgV = document.getElementById('bgV');
+  const bgPrev = document.getElementById('bgPrev');
+  const bgReset = document.getElementById('bgReset');
+
+  function hsvToRgb(h, s, v){ // h:[0,360), s,v:[0,1]
+    const c = v*s, x = c*(1-Math.abs(((h/60)%2)-1)), m = v-c;
+    let r=0,g=0,b=0;
+    if (0<=h && h<60){ r=c; g=x; b=0; }
+    else if (60<=h && h<120){ r=x; g=c; b=0; }
+    else if (120<=h && h<180){ r=0; g=c; b=x; }
+    else if (180<=h && h<240){ r=0; g=x; b=c; }
+    else if (240<=h && h<300){ r=x; g=0; b=c; }
+    else { r=c; g=0; b=x; }
+    return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
+  }
+
+  function drawWheel(){
+    const dpr = window.devicePixelRatio || 1;
+    const w = bgWheel.clientWidth * dpr, h = bgWheel.clientHeight * dpr;
+    if (bgWheel.width !== w || bgWheel.height !== h){ bgWheel.width = w; bgWheel.height = h; }
+    const ctx = bgWheel.getContext('2d');
+    const img = ctx.createImageData(w, h);
+    const V = Number(bgV.value)/100;
+    const cx = w/2, cy = h/2, R = Math.min(w,h)/2 - 1;
+    const data = img.data;
+    for (let y=0;y<h;y++){
+      for (let x=0;x<w;x++){
+        const dx = x - cx, dy = y - cy;
+        const r = Math.sqrt(dx*dx + dy*dy);
+        const idx = (y*w + x)*4;
+        if (r <= R){
+          let sat = r/R; // 0..1
+          let ang = Math.atan2(dy, dx); // -PI..PI
+          let hue = (ang*180/Math.PI + 360) % 360;
+          const [rr,gg,bb] = hsvToRgb(hue, sat, V);
+          data[idx]=rr; data[idx+1]=gg; data[idx+2]=bb; data[idx+3]=255;
+        } else {
+          data[idx]=0; data[idx+1]=0; data[idx+2]=0; data[idx+3]=0;
+        }
+      }
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  function setBackgroundRgb(r,g,b){
+    const css = `rgb(${r}, ${g}, ${b})`;
+    host.style.background = css;
+    bgPrev.style.background = css;
+  }
+
+  function pickAt(evt){
+    const rect = bgWheel.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const x = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+    const y = (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top;
+    const px = Math.max(0, Math.min(rect.width-1, x));
+    const py = Math.max(0, Math.min(rect.height-1, y));
+    const ctx = bgWheel.getContext('2d');
+    const img = ctx.getImageData(px*dpr, py*dpr, 1, 1).data;
+    setBackgroundRgb(img[0], img[1], img[2]);
+  }
+
+  let dragging = false;
+  bgWheel.addEventListener('mousedown', e=>{ dragging=true; pickAt(e); });
+  window.addEventListener('mouseup', ()=> dragging=false);
+  bgWheel.addEventListener('mousemove', e=>{ if(dragging) pickAt(e); });
+  bgWheel.addEventListener('touchstart', e=>{ dragging=true; pickAt(e); e.preventDefault(); }, {passive:false});
+  bgWheel.addEventListener('touchmove', e=>{ if(dragging) pickAt(e); e.preventDefault(); }, {passive:false});
+  window.addEventListener('touchend', ()=> dragging=false);
+
+  bgV.addEventListener('input', ()=> { drawWheel(); }); // parlaklık değişince teker güncellenir
+  bgReset.addEventListener('click', ()=>{
+    host.style.background = 'linear-gradient(180deg,#0b0f14,#0a0d12)';
+    bgPrev.style.background = host.style.background;
+  });
+
+  window.addEventListener('resize', drawWheel);
+  drawWheel();
+  bgPrev.style.background = host.style.background;
+
+  function flashInfo(msg){
+    // küçük UX, istersen geliştir
+    console.log(msg);
+  }
+
+  /* ---------- MOBİL MENÜ / TAM EKRAN ---------- */
+  const side = document.getElementById('side');
+  const overlay = document.getElementById('overlay');
+  const menuBtn = document.getElementById('menuBtn');
+  menuBtn?.addEventListener('click', () => {
+    const isOpen = side.classList.toggle('open');
+    overlay.hidden = !isOpen;
+    document.documentElement.style.overflow = isOpen ? 'hidden' : '';
+  });
+  overlay?.addEventListener('click', () => {
+    side.classList.remove('open');
+    overlay.hidden = true;
+    document.documentElement.style.overflow = '';
+  });
+  const fsBtn = document.getElementById('fsBtn');
+  fsBtn?.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await (mv.requestFullscreen?.() || document.documentElement.requestFullscreen());
+    } catch(e){ console.warn('fullscreen error', e); }
+  });
+  // Kart tıklanınca mobilde çekmeceyi kapat
+  document.getElementById('gallery')?.addEventListener('click', (e)=>{
+    if (window.matchMedia('(max-width: 900px)').matches){
+      side.classList.remove('open'); overlay.hidden = true;
+      document.documentElement.style.overflow = '';
+    }
+  });
+
+  /* ---------- BAŞLANGIÇTA İLK MODEL ---------- */
+  loadModel(catalog[0]);
+})();
+</script>
 </body>
 </html>
