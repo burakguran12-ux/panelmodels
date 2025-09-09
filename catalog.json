@@ -21,7 +21,7 @@
   },
   {
     "name": "Rigel Panel",
-    "src": "models/Rigel.glb",
+    "src": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
     "targetMaterials": [
       "Panel",
