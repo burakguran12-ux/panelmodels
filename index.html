@@ -210,25 +210,6 @@ function renderPalette(items){
   });
 }
 
-
-  // ... mevcut kodlarının hemen altına ekle
-  document.getElementById('matBtn').addEventListener('click', () => {
-    const mv = document.getElementById('mv');
-    const names = [...new Set((mv.model?.materials || []).map(m => m.name || '(isimsiz)'))];
-    if (!names.length) { alert('Model yüklü değil ya da malzeme bulunamadı.'); return; }
-    const txt = names.join('\n');
-    console.table(names.map(n => ({ name: n })));
-    navigator.clipboard?.writeText(names.join(', '));
-    alert(`Toplam ${names.length} malzeme:\n\n${txt}\n\n(Kopyalandı)`);
-  });
-
-  // Model yüklendiğinde konsola da yazdır
-  document.getElementById('mv').addEventListener('load', () => {
-    const mv = document.getElementById('mv');
-    console.log('Materials:', mv.model?.materials?.map(m => m.name));
-  });
-
-
   renderPalette(palette);
 
   // Load first model by default

@@ -4,9 +4,8 @@
     "src": "models/atlas.glb",
     "thumb": "thumbs/atlas.png",
     "targetMaterials": [
-      "Panel",
-      "Wood",
-      "Kaplama"
+      "[Wood Board Cork]1",
+      "hammdf"
     ]
   },
   {
@@ -14,9 +13,8 @@
     "src": "models/diamond.glb",
     "thumb": "thumbs/diamond.png",
     "targetMaterials": [
-      "Panel",
-      "Wood",
-      "Kaplama"
+      "[Wood Board Cork]1",
+      "hammdf",
     ]
   },
   {
@@ -24,9 +22,8 @@
     "src": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
     "targetMaterials": [
-      "Panel",
-      "Wood",
-      "Kaplama"
+      "[Wood Board Cork]1",
+      "Color_003",
     ]
   }
 ]
