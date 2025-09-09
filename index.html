@@ -150,12 +150,13 @@
     return [r/255, g/255, b/255, 1.0];
   }
 
-  function getTargetMaterials(){
-    const names = (mv.dataset.target||'').split(',').map(s=>s.trim()).filter(Boolean);
-    const mats = mv.model?.materials || [];
-    if(names.length===0) return mats; // apply to all
-    return mats.filter(m => names.includes(m.name));
-  }
+function getTargetMaterials(){
+  const names = (mv.dataset.target||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const mats = mv.model?.materials || [];
+  if (names.length === 0) return mats;
+  const picked = mats.filter(m => names.includes(m.name));
+  return picked.length ? picked : mats; // eşleşme yoksa tümüne uygula
+}
 
   async function applyColor(hex){
     if(!mv.model) return;
