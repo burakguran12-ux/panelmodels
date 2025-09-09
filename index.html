@@ -30,7 +30,6 @@
     .viewer{position:relative;background:#000;border-radius:12px;overflow:hidden;margin:0 12px 12px 0}
     model-viewer{width:100%;height:100%;min-height:560px;--poster-color:transparent}
 
-    /* Alttaki palet */
     .palette{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(10,14,20,.85);backdrop-filter:blur(4px);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;overflow:auto}
     .swatches{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .swchip{display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -42,53 +41,35 @@
     .spacer{flex:1 1 auto}
     .only-mobile{display:none}
 
-    /* Sağ üst: sahne & kamera kontrol kartı */
-    .controls{
-      position:absolute; top:12px; right:12px; z-index:5;
-      display:flex; flex-direction:column; gap:10px;
-    }
-    .card2{
-      background:rgba(10,14,20,.85); backdrop-filter:blur(4px);
-      border:1px solid var(--border); border-radius:12px; padding:10px; min-width:240px;
-    }
+    .controls{position:absolute; top:12px; right:12px; z-index:5; display:flex; flex-direction:column; gap:10px}
+    .card2{background:rgba(10,14,20,.85); backdrop-filter:blur(4px); border:1px solid var(--border); border-radius:12px; padding:10px; min-width:240px}
     .card2 h3{margin:0 0 8px 0; font-size:12px; color:var(--muted); letter-spacing:.3px; text-transform:uppercase}
     .row{display:flex; align-items:center; gap:8px}
     .row label{font-size:12px; color:var(--muted); width:90px}
     input[type="range"]{width:100%; accent-color:var(--accent)}
     .iconbar{display:grid; grid-template-columns:repeat(5, 36px); gap:6px}
-    .iconbtn{
-      width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid var(--border);
-      background:#0e141c; border-radius:8px; cursor:pointer;
-    }
+    .iconbtn{width:36px; height:36px; display:inline-grid; place-items:center; border:1px solid var(--border); background:#0e141c; border-radius:8px; cursor:pointer}
     .iconbtn:hover{border-color:#2c3e55}
     .iconbtn svg{width:22px; height:22px; opacity:.9}
 
-    /* BG pastel tekeri – yumuşak renkler için */
     .bgbox{display:flex;align-items:center;gap:10px; margin-top:6px}
     .wheelWrap{position:relative; width:128px; height:128px; flex:0 0 auto}
     canvas#bgWheel{width:128px;height:128px;border:1px solid var(--border);border-radius:50%}
     .bgPreview{width:28px;height:28px;border-radius:6px;border:1px solid var(--border)}
 
-    /* Overlay (mobil menü için) */
     .overlay{position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:40}
 
-    /* Mobil uyarlamalar */
     @media (max-width: 900px){
       .only-mobile{display:inline-flex}
       .app{grid-template-columns:1fr; grid-template-rows:auto 1fr}
-      aside.side{
-        position:fixed; z-index:50; top:0; left:0; bottom:0;
-        width:min(84vw, 360px); transform:translateX(-105%);
-        transition:transform .28s ease; border-right:1px solid var(--border);
-        box-shadow:0 10px 30px rgba(0,0,0,.4);
-      }
+      aside.side{position:fixed; z-index:50; top:0; left:0; bottom:0; width:min(84vw, 360px); transform:translateX(-105%); transition:transform .28s ease; border-right:1px solid var(--border); box-shadow:0 10px 30px rgba(0,0,0,.4)}
       aside.side.open{ transform:translateX(0) }
       model-viewer{ min-height:65vh }
       .palette{ position:static; margin:8px 12px; overflow-x:auto }
       .grid{ grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px }
       .swatch{ width:36px; height:36px; border-radius:8px }
       .btn{ padding:10px 12px }
-      .controls{ top:auto; bottom: calc(12px + 56px + 8px); right:12px; } /* paletin üstünde kalsın */
+      .controls{ top:auto; bottom: calc(12px + 56px + 8px); right:12px; }
     }
     @media (max-width: 420px){ model-viewer{ min-height:70vh } }
     @supports(padding:max(0px)){
@@ -126,28 +107,14 @@
         <button class="btn" slot="ar-button">AR ile Gör</button>
       </model-viewer>
 
-      <!-- Sağ üst "Sahne" & "Kamera" kartları -->
       <div class="controls">
         <div class="card2">
           <h3>Sahne</h3>
-          <div class="row">
-            <label>Parlaklık</label>
-            <input id="exp" type="range" min="0.3" max="1.8" step="0.05" value="1.0">
-          </div>
-          <div class="row" style="margin-top:6px">
-            <label>Gölge</label>
-            <input id="shadow" type="range" min="0" max="1" step="0.02" value="0.7">
-          </div>
-          <div class="row" style="margin-top:6px">
-            <label>Güneş Açısı</label>
-            <input id="envrot" type="range" min="0" max="360" step="1" value="0">
-          </div>
-
-          <!-- Pastel BG renk tekeri -->
+          <div class="row"><label>Parlaklık</label><input id="exp" type="range" min="0.3" max="1.8" step="0.05" value="1.0"></div>
+          <div class="row" style="margin-top:6px"><label>Gölge</label><input id="shadow" type="range" min="0" max="1" step="0.02" value="0.7"></div>
+          <div class="row" style="margin-top:6px"><label>Güneş Açısı</label><input id="envrot" type="range" min="0" max="360" step="1" value="0"></div>
           <div class="bgbox">
-            <div class="wheelWrap">
-              <canvas id="bgWheel" width="256" height="256"></canvas>
-            </div>
+            <div class="wheelWrap"><canvas id="bgWheel" width="256" height="256"></canvas></div>
             <div style="display:flex;flex-direction:column;gap:6px">
               <div class="hint">Matlık (parlaklık)</div>
               <input id="bgV" type="range" min="25" max="75" value="55">
@@ -162,46 +129,15 @@
         <div class="card2">
           <h3>Kamera Açıları</h3>
           <div class="iconbar">
-            <!-- Üstten -->
-            <button class="iconbtn" data-orbit="0deg 0deg auto" title="Üstten">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="1.6"/>
-                <rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor"/>
-              </svg>
-            </button>
-            <!-- Alttan -->
-            <button class="iconbtn" data-orbit="0deg 180deg auto" title="Alttan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="1.6"/>
-                <rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor"/>
-              </svg>
-            </button>
-            <!-- Önden -->
-            <button class="iconbtn" data-orbit="0deg 75deg auto" title="Önden">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <rect x="5" y="5" width="14" height="14" rx="2" stroke-width="1.6"/>
-                <rect x="8" y="8" width="8" height="8" rx="1" fill="currentColor"/>
-              </svg>
-            </button>
-            <!-- Arkadan -->
-            <button class="iconbtn" data-orbit="180deg 75deg auto" title="Arkadan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <rect x="5" y="5" width="14" height="14" rx="2" stroke-width="1.6"/>
-                <path d="M8 8h8v8H8z" stroke-width="1.6"/>
-              </svg>
-            </button>
-            <!-- Ön-sağ 45° yukarı -->
-            <button class="iconbtn" data-orbit="45deg 60deg auto" title="Ön sağ 45° yukarı">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <rect x="4" y="6" width="14" height="12" rx="2" transform="skewX(-10)" stroke-width="1.6"/>
-                <line x1="12" y1="4" x2="18" y2="8" stroke-width="1.6"/>
-              </svg>
-            </button>
+            <button class="iconbtn" data-orbit="0deg 0deg auto" title="Üstten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="1.6"/><rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor"/></svg></button>
+            <button class="iconbtn" data-orbit="0deg 180deg auto" title="Alttan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="1.6"/><rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor"/></svg></button>
+            <button class="iconbtn" data-orbit="0deg 75deg auto" title="Önden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="5" width="14" height="14" rx="2" stroke-width="1.6"/><rect x="8" y="8" width="8" height="8" rx="1" fill="currentColor"/></svg></button>
+            <button class="iconbtn" data-orbit="180deg 75deg auto" title="Arkadan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="5" width="14" height="14" rx="2" stroke-width="1.6"/><path d="M8 8h8v8H8z" stroke-width="1.6"/></svg></button>
+            <button class="iconbtn" data-orbit="45deg 60deg auto" title="Ön sağ 45° yukarı"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="6" width="14" height="12" rx="2" transform="skewX(-10)" stroke-width="1.6"/><line x1="12" y1="4" x2="18" y2="8" stroke-width="1.6"/></svg></button>
           </div>
         </div>
       </div>
 
-      <!-- Altta palet -->
       <div class="palette">
         <span class="hint">Kaplama / Renk:</span>
         <div id="swatches" class="swatches"></div>
@@ -221,24 +157,26 @@
   try {
     const r = await fetch('catalog.json', {cache:'no-store'});
     if(r.ok){ catalog = await r.json(); }
-  } catch {}
-  if(!catalog){
+    else throw new Error('catalog.json yüklenemedi: ' + r.status);
+  } catch (e){
+    console.warn(e);
     try {
-      const r = await fetch('files.json', {cache:'no-store'});
-      if(r.ok){
-        const arr = await r.json();
+      const r2 = await fetch('files.json', {cache:'no-store'});
+      if(r2.ok){
+        const arr = await r2.json();
         catalog = arr.map(name => ({ name, src:name, thumb:'thumbs/default.png' }));
       }
     } catch {}
   }
   if(!Array.isArray(catalog) || catalog.length===0){
-    gallery.innerHTML = '<div class="hint">Henüz katalog yok. catalog.json veya files.json ekleyin.</div>';
+    gallery.innerHTML = '<div class="hint">Katalog bulunamadı. Lütfen <code>catalog.json</code> veya <code>files.json</code> ekleyin.</div>';
     return;
   }
 
   let palette = null;
   try {
-    const r = await fetch('materials/palette.json', {cache:'no-store'});
+    // *** DÜZELTİLEN YOL ***
+    const r = await fetch('palette.json', {cache:'no-store'});
     if(r.ok){ palette = await r.json(); }
   } catch {}
   if(!Array.isArray(palette)){
@@ -256,7 +194,8 @@
     items.forEach(item => {
       const card = document.createElement('div');
       card.className = 'card';
-      card.innerHTML = '<img loading="lazy" src="'+(item.thumb||'thumbs/default.png')+'" alt="">'
+      const thumb = item.thumb || 'thumbs/default.png';
+      card.innerHTML = '<img loading="lazy" src="'+thumb+'" alt="">'
                       +'<div class="meta"><span>'+(item.title||item.name||item.src)+'</span>'
                       +'<span>'+ (item.size||'') +'</span></div>';
       card.addEventListener('click', ()=> loadModel(item));
@@ -268,7 +207,7 @@
   function loadModel(item){
     mv.src = item.src;
     mv.alt = item.title || item.name || item.src;
-    mv.dataset.target = (item.targetMaterials || []).join(','); // sadece hedef malzemeler
+    mv.dataset.target = (item.targetMaterials || []).join(',');
     document.title = 'PanelModels — ' + mv.alt;
   }
 
@@ -277,9 +216,9 @@
     const names = (mv.dataset.target || '')
       .split(',').map(s=>s.trim()).filter(Boolean);
     const all = mv.model?.materials || [];
-    if (names.length === 0) return all; // katalog hedef vermezse hepsi (bilinçli)
+    if (names.length === 0) return all;
     const picked = all.filter(m =>
-      names.some(n => m.name === n || m.name.startsWith(n + '.')) // PanelKaplama.001 yakala
+      names.some(n => m.name === n || m.name.startsWith(n + '.'))
     );
     if (!picked.length) console.warn('Hedef malzeme bulunamadı:', all.map(m=>m.name));
     return picked;
@@ -299,13 +238,12 @@
     for (const mat of mats) {
       try {
         const pmr = mat.pbrMetallicRoughness;
-        if (mat.setBaseColorTexture) mat.setBaseColorTexture(null); // doku varsa temizle
+        if (mat.setBaseColorTexture) mat.setBaseColorTexture(null);
         else if (pmr?.baseColorTexture) pmr.baseColorTexture.setTexture(null);
         if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor(rgba);
         else pmr.baseColorFactor = rgba;
       } catch (e) { console.warn('applyColor:', e); }
     }
-    flashInfo('Renk uygulandı');
   }
 
   async function applyTexture(url){
@@ -315,14 +253,13 @@
     for (const mat of mats) {
       try {
         const pmr = mat.pbrMetallicRoughness;
-        if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor([1,1,1,1]); // tint sıfırla
+        if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor([1,1,1,1]);
         else pmr.baseColorFactor = [1,1,1,1];
         if (mat.setBaseColorTexture) { mat.setBaseColorTexture(tex); }
         else if (pmr?.setBaseColorTexture) { pmr.setBaseColorTexture(tex); }
         else if (pmr?.baseColorTexture) { pmr.baseColorTexture.setTexture(tex); }
       } catch (e) { console.warn('applyTexture:', e); }
     }
-    flashInfo('Doku uygulandı');
   }
 
   function renderPalette(items){
@@ -330,17 +267,154 @@
     items.forEach(it => {
       const wrap = document.createElement('div');
       wrap.className = 'swchip';
-
       const el = document.createElement('span');
       el.className = 'swatch';
       if(it['#']) el.style.background = it['#'];
       if(it.texture) el.style.backgroundImage = 'url('+it.texture+')';
       el.title = it.name || '';
       el.addEventListener('click', ()=> it.texture ? applyTexture(it.texture) : applyColor(it['#']));
-
       const lbl = document.createElement('div');
       lbl.className = 'slabel';
       lbl.textContent = it.name || '';
+      wrap.appendChild(el); wrap.appendChild(lbl);
+      swatches.appendChild(wrap);
+    });
+  }
+  renderPalette(palette);
 
-      wrap.appendChild(el);
-      wr
+  mv.addEventListener('load', ()=> {
+    console.log('Materials:', (mv.model?.materials||[]).map(m=>m.name));
+  });
+
+  /* ---------- SAHNE ---------- */
+  const exp = document.getElementById('exp');
+  const sh = document.getElementById('shadow');
+  const rot = document.getElementById('envrot');
+  const applyScene = () => { mv.exposure = Number(exp.value); mv.shadowIntensity = Number(sh.value); mv.environmentRotation = rot.value + 'deg'; };
+  [exp, sh, rot].forEach(i => i.addEventListener('input', applyScene));
+  applyScene();
+
+  /* ---------- PASTEL BG TEKER ---------- */
+  const bgWheel = document.getElementById('bgWheel');
+  const bgV = document.getElementById('bgV');
+  const bgPrev = document.getElementById('bgPrev');
+  const bgReset = document.getElementById('bgReset');
+  const SAT_MAX = 0.35;
+
+  function hsvToRgb(h, s, v){
+    const c = v*s, x = c*(1-Math.abs(((h/60)%2)-1)), m = v-c;
+    let r=0,g=0,b=0;
+    if (0<=h && h<60){ r=c; g=x; b=0; }
+    else if (60<=h && h<120){ r=x; g=c; b=0; }
+    else if (120<=h && h<180){ r=0; g=c; b=x; }
+    else if (180<=h && h<240){ r=0; g=x; b=c; }
+    else if (240<=h && h<300){ r=x; g=0; b=c; }
+    else { r=c; g=0; b=x; }
+    return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
+  }
+
+  function drawWheel(){
+    const dpr = window.devicePixelRatio || 1;
+    const w = bgWheel.clientWidth * dpr, h = bgWheel.clientHeight * dpr;
+    if (bgWheel.width !== w || bgWheel.height !== h){ bgWheel.width = w; bgWheel.height = h; }
+    const ctx = bgWheel.getContext('2d');
+    const img = ctx.createImageData(w, h);
+    const V = Number(bgV.value)/100;
+    const cx = w/2, cy = h/2, R = Math.min(w,h)/2 - 1;
+    const data = img.data;
+    for (let y=0;y<h;y++){
+      for (let x=0;x<w;x++){
+        const dx = x - cx, dy = y - cy;
+        const r = Math.sqrt(dx*dx + dy*dy);
+        const idx = (y*w + x)*4;
+        if (r <= R){
+          const satRaw = r/R;
+          const sat = Math.min(SAT_MAX, satRaw * SAT_MAX);
+          const ang = Math.atan2(dy, dx);
+          const hue = (ang*180/Math.PI + 360) % 360;
+          const [rr,gg,bb] = hsvToRgb(hue, sat, V);
+          data[idx]=rr; data[idx+1]=gg; data[idx+2]=bb; data[idx+3]=255;
+        } else { data[idx+3]=0; }
+      }
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  function setBackgroundRgb(r,g,b){
+    const css = `rgb(${r}, ${g}, ${b})`;
+    host.style.background = css;
+    bgPrev.style.background = css;
+  }
+
+  function pickAt(evt){
+    const rect = bgWheel.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const x = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+    const y = (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top;
+    const px = Math.max(0, Math.min(rect.width-1, x));
+    const py = Math.max(0, Math.min(rect.height-1, y));
+    const ctx = bgWheel.getContext('2d');
+    const img = ctx.getImageData(px*dpr, py*dpr, 1, 1).data;
+    setBackgroundRgb(img[0], img[1], img[2]);
+  }
+
+  let dragging = false;
+  bgWheel.addEventListener('mousedown', e=>{ dragging=true; pickAt(e); });
+  window.addEventListener('mouseup', ()=> dragging=false);
+  bgWheel.addEventListener('mousemove', e=>{ if(dragging) pickAt(e); });
+  bgWheel.addEventListener('touchstart', e=>{ dragging=true; pickAt(e); e.preventDefault(); }, {passive:false});
+  bgWheel.addEventListener('touchmove', e=>{ if(dragging) pickAt(e); e.preventDefault(); }, {passive:false});
+  window.addEventListener('touchend', ()=> dragging=false);
+  bgV.addEventListener('input', ()=> { drawWheel(); });
+  bgReset.addEventListener('click', ()=>{
+    host.style.background = 'linear-gradient(180deg,#0b0f14,#0a0d12)';
+    bgPrev.style.background = host.style.background;
+  });
+  window.addEventListener('resize', drawWheel);
+  drawWheel();
+  bgPrev.style.background = host.style.background;
+
+  /* ---------- MOBİL MENÜ / TAM EKRAN ---------- */
+  const side = document.getElementById('side');
+  const overlay = document.getElementById('overlay');
+  const menuBtn = document.getElementById('menuBtn');
+  menuBtn?.addEventListener('click', () => {
+    const isOpen = side.classList.toggle('open');
+    overlay.hidden = !isOpen;
+    document.documentElement.style.overflow = isOpen ? 'hidden' : '';
+  });
+  overlay?.addEventListener('click', () => {
+    side.classList.remove('open');
+    overlay.hidden = true;
+    document.documentElement.style.overflow = '';
+  });
+  const fsBtn = document.getElementById('fsBtn');
+  fsBtn?.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await (mv.requestFullscreen?.() || document.documentElement.requestFullscreen());
+    } catch(e){ console.warn('fullscreen error', e); }
+  });
+
+  document.getElementById('gallery')?.addEventListener('click', ()=>{
+    if (window.matchMedia('(max-width: 900px)').matches){
+      side.classList.remove('open'); overlay.hidden = true;
+      document.documentElement.style.overflow = '';
+    }
+  });
+
+  /* ---------- KAMERA PRESETLER ---------- */
+  document.querySelectorAll('.iconbtn[data-orbit]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const orbit = btn.getAttribute('data-orbit');
+      mv.setAttribute('camera-orbit', orbit);
+      mv.setAttribute('camera-target', 'auto');
+    });
+  });
+
+  /* ---------- BAŞLANGIÇ MODEL ---------- */
+  loadModel(catalog[0]);
+})();
+</script>
+</body>
+</html>
