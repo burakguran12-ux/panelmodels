@@ -140,14 +140,51 @@
     ];
   }
 
-  function hexToRgba(hex){
-    const s = hex.replace('#','');
-    const bigint = parseInt(s.length===3 ? s.split('').map(c=>c+c).join('') : s, 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return [r/255, g/255, b/255, 1.0];
+function hexToRgba(hex){
+  const s = hex.replace('#','');
+  const h = s.length===3 ? s.split('').map(c=>c+c).join('') : s;
+  const v = parseInt(h, 16);
+  const r = (v >> 16) & 255, g = (v >> 8) & 255, b = v & 255;
+  // glTF renkleri 0..1 arası istiyor
+  return [r/255, g/255, b/255, 1.0];
+}
+
+async function applyColor(hex){
+  const mv = document.getElementById('mv');
+  if(!mv.model) return;
+  const mats = getTargetMaterials();
+  const rgba = hexToRgba(hex);
+  for (const mat of mats) {
+    try {
+      const pmr = mat.pbrMetallicRoughness;
+      // Doku varsa temizle (renk görünsün)
+      if (pmr?.baseColorTexture) pmr.baseColorTexture.setTexture(null);
+      // DOĞRU: Renk set et
+      if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor(rgba);
+      else pmr.baseColorFactor = rgba; // eski sürümler için
+    } catch (e) { console.warn('applyColor error', e); }
   }
+  applyInfo.textContent = 'Renk uygulandı';
+  setTimeout(()=> applyInfo.textContent='', 1200);
+}
+
+async function applyTexture(url){
+  const mv = document.getElementById('mv');
+  if(!mv.model) return;
+  const tex = await mv.createTexture(url);
+  const mats = getTargetMaterials();
+  for (const mat of mats) {
+    try {
+      const pmr = mat.pbrMetallicRoughness;
+      // DOĞRU: Doku set et
+      if (pmr?.setBaseColorTexture) pmr.setBaseColorTexture(tex);
+      else pmr?.baseColorTexture?.setTexture(tex);
+    } catch (e) { console.warn('applyTexture error', e); }
+  }
+  applyInfo.textContent = 'Doku uygulandı';
+  setTimeout(()=> applyInfo.textContent='', 1200);
+}
+
 
 function getTargetMaterials(){
   const names = (mv.dataset.target||'').split(',').map(s=>s.trim()).filter(Boolean);
@@ -156,36 +193,6 @@ function getTargetMaterials(){
   const picked = mats.filter(m => names.includes(m.name));
   return picked.length ? picked : mats; // eşleşme yoksa tümüne uygula
 }
-
-  async function applyColor(hex){
-    if(!mv.model) return;
-    const mats = getTargetMaterials();
-    mats.forEach(mat => {
-      try {
-        // Clear any baseColorTexture first
-        mat.pbrMetallicRoughness?.baseColorTexture?.setTexture(null);
-        // Set color factor
-        const rgba = hexToRgba(hex);
-        if (mat.setBaseColorFactor) mat.setBaseColorFactor(rgba);
-        else if (mat.pbrMetallicRoughness) mat.pbrMetallicRoughness.baseColorFactor = rgba;
-      } catch(e){ console.warn('applyColor err', e); }
-    });
-    applyInfo.textContent = 'Renk uygulandı';
-    setTimeout(()=> applyInfo.textContent='', 1200);
-  }
-
-  async function applyTexture(url){
-    if(!mv.model) return;
-    const tex = await mv.createTexture(url);
-    const mats = getTargetMaterials();
-    mats.forEach(mat => {
-      try {
-        mat.pbrMetallicRoughness?.baseColorTexture?.setTexture(tex);
-      } catch(e){ console.warn('applyTexture err', e); }
-    });
-    applyInfo.textContent = 'Doku uygulandı';
-    setTimeout(()=> applyInfo.textContent='', 1200);
-  }
 
 function renderPalette(items){
   swatches.innerHTML = '';
