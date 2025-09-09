@@ -65,6 +65,7 @@
       <!-- Palette -->
       <div class="palette">
         <span class="hint">Kaplama / Renk:</span>
+	<button id="matBtn" class="chip">Malzeme isimleri</button>
         <div id="swatches" class="swatches"></div>
         <div class="spacer"></div>
         <span id="applyInfo" class="hint"></span>
@@ -208,6 +209,26 @@ function renderPalette(items){
     swatches.appendChild(wrap);
   });
 }
+
+<script>
+  // ... mevcut kodlarının hemen altına ekle
+  document.getElementById('matBtn').addEventListener('click', () => {
+    const mv = document.getElementById('mv');
+    const names = [...new Set((mv.model?.materials || []).map(m => m.name || '(isimsiz)'))];
+    if (!names.length) { alert('Model yüklü değil ya da malzeme bulunamadı.'); return; }
+    const txt = names.join('\n');
+    console.table(names.map(n => ({ name: n })));
+    navigator.clipboard?.writeText(names.join(', '));
+    alert(`Toplam ${names.length} malzeme:\n\n${txt}\n\n(Kopyalandı)`);
+  });
+
+  // Model yüklendiğinde konsola da yazdır
+  document.getElementById('mv').addEventListener('load', () => {
+    const mv = document.getElementById('mv');
+    console.log('Materials:', mv.model?.materials?.map(m => m.name));
+  });
+</script>
+
 
 
   renderPalette(palette);
