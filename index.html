@@ -192,6 +192,14 @@ async function applyTexture(url){
   setTimeout(()=> applyInfo.textContent='', 1000);
 }
 
+function loadModel(item){
+  mv.src = item.src;
+  mv.alt = item.title || item.name || item.src;
+  mv.dataset.target = (item.targetMaterials || []).join(','); // <-- BUNUN OLMASI ŞART
+  document.title = 'PanelModels — ' + mv.alt;
+}
+
+
 
 
 function getTargetMaterials(){
