@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Web3D Test Viewer</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body{margin:0;font-family:sans-serif;background:#111;color:#eee;display:flex;flex-direction:column;height:100vh}
+    header,footer{padding:10px;background:#222}
+    main{flex:1;display:flex;gap:10px}
+    aside{width:220px;background:#181818;padding:10px;overflow:auto}
+    model-viewer{flex:1;background:#000}
+    .item{padding:5px;cursor:pointer;border-radius:5px}
+    .item:hover{background:#333}
+    input,button{margin:5px 0;padding:5px;border-radius:4px;border:1px solid #333;background:#000;color:#eee}
+  </style>
+</head>
+<body>
+<header><h2>Web3D Test Görüntüleyici</h2></header>
+<main>
+  <aside>
+    <input id="urlInput" placeholder="Model URL veya dosya adı" />
+    <button id="loadBtn">Yükle</button>
+    <input id="fileInput" type="file" accept=".glb" />
+    <h4>files.json listesi</h4>
+    <div id="list"></div>
+  </aside>
+  <model-viewer id="mv" camera-controls auto-rotate shadow-intensity="1" exposure="1.0"
+    alt="3B model görüntüleyici"></model-viewer>
+</main>
+<footer><small>Dosyalarınızı aynı klasöre koyun. (GitHub Pages için uygundur)</small></footer>
+
+<script>
+const mv = document.getElementById('mv');
+function setModel(src){ mv.src = src; document.title="Viewer - "+src; }
+
+document.getElementById('loadBtn').onclick=()=>{
+  const v=document.getElementById('urlInput').value.trim();
+  if(v) setModel(v);
+};
+document.getElementById('fileInput').onchange=(e)=>{
+  const f=e.target.files[0]; if(f){ setModel(URL.createObjectURL(f)); }
+};
+
+// Load manifest
+fetch('files.json').then(r=>r.json()).then(arr=>{
+  const list=document.getElementById('list');
+  arr.forEach(name=>{
+    const d=document.createElement('div');d.className='item';d.textContent=name;
+    d.onclick=()=>setModel(name);
+    list.appendChild(d);
+  });
+}).catch(_=>{});
+</script>
+</body>
+</html>

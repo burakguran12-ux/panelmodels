@@ -3,55 +3,242 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Web3D Test Viewer</title>
+  <title>PanelModels — GLB Viewer (Advanced)</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    body{margin:0;font-family:sans-serif;background:#111;color:#eee;display:flex;flex-direction:column;height:100vh}
-    header,footer{padding:10px;background:#222}
-    main{flex:1;display:flex;gap:10px}
-    aside{width:220px;background:#181818;padding:10px;overflow:auto}
-    model-viewer{flex:1;background:#000}
-    .item{padding:5px;cursor:pointer;border-radius:5px}
-    .item:hover{background:#333}
-    input,button{margin:5px 0;padding:5px;border-radius:4px;border:1px solid #333;background:#000;color:#eee}
+    :root{
+      --bg:#0b0f14; --panel:#121922; --text:#e8eef7; --muted:#a9b3c1; --accent:#71c8ff;
+      --border:#223042; --ok:#90e39a; --err:#ff9aa2;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .app{display:grid;grid-template-columns:320px 1fr;grid-template-rows:auto 1fr auto;gap:10px;height:100%}
+    header,footer{grid-column:1/-1;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--border)}
+    footer{border-top:1px solid var(--border);border-bottom:none}
+    header h1{margin:0;font-size:18px}
+    header small{color:var(--muted)}
+    .side{padding:10px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;gap:10px;overflow:auto}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .spacer{flex:1 1 auto}
+    input[type="text"], input[type="search"], select{
+      background:#0e141c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;min-width:150px
+    }
+    button,.btn{background:#0e141c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer}
+    button:hover,.btn:hover{border-color:#2c3e55}
+    .viewer{position:relative;background:#000;border-radius:12px;overflow:hidden;margin:10px}
+    model-viewer{width:100%;height:100%;min-height:520px;--poster-color:transparent}
+    .list{display:flex;flex-direction:column;gap:4px;max-height:42vh;overflow:auto;border:1px dashed var(--border);border-radius:8px;padding:8px}
+    .item{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:6px;cursor:pointer}
+    .item:hover{background:#0e141c}
+    .hint{color:var(--muted);font-size:12px}
+    .drop{border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center}
+    .drop.drag{border-color:var(--accent)}
+    .badge{background:#102134;color:#bfe5ff;border:1px solid #1e3750;border-radius:999px;padding:3px 8px;font-size:12px}
+    .note{background:#0e141c;border:1px solid var(--border);border-radius:8px;padding:8px}
+    .ok{color:var(--ok)} .err{color:var(--err)}
+    .bgchip{border:1px solid var(--border);padding:5px 8px;border-radius:999px;cursor:pointer}
+    .bgchip.active{outline:1px solid var(--accent)}
+    .progress{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.55);padding:6px 8px;border-radius:6px}
+    code{background:#0e141c;border:1px solid #1b2532;padding:2px 4px;border-radius:4px}
   </style>
 </head>
 <body>
-<header><h2>Web3D Test Görüntüleyici</h2></header>
-<main>
-  <aside>
-    <input id="urlInput" placeholder="Model URL veya dosya adı" />
-    <button id="loadBtn">Yükle</button>
-    <input id="fileInput" type="file" accept=".glb" />
-    <h4>files.json listesi</h4>
-    <div id="list"></div>
+<div class="app">
+  <header class="row">
+    <h1>PanelModels — GLB Viewer</h1>
+    <span class="badge">advanced</span>
+    <div class="spacer"></div>
+    <small id="status" class="hint">Hazır</small>
+  </header>
+
+  <aside class="side">
+    <div class="row">
+      <input id="urlInput" type="text" placeholder="GLB URL veya dosya adı" />
+      <button id="loadBtn">Yükle</button>
+      <label class="btn" for="fileInput">Bilgisayardan Seç</label>
+      <input id="fileInput" type="file" accept=".glb,.gltf,model/gltf-binary" style="display:none" />
+    </div>
+
+    <div id="drop" class="drop hint">.glb dosyanızı sürükleyip bırakın ya da üstten seçin.</div>
+
+    <div class="row">
+      <input id="filter" type="search" placeholder="Listede ara…" />
+      <button id="copyBtn" title="Bağlantıyı kopyala">Bağlantı</button>
+      <button id="openBtn" title="Yeni sekmede aç">Aç</button>
+    </div>
+
+    <div class="row hint">
+      <span>Arka plan:</span>
+      <span class="bgchip" data-bg="dark">Koyu</span>
+      <span class="bgchip" data-bg="light">Açık</span>
+      <span class="bgchip" data-bg="transparent">Şeffaf</span>
+      <label class="row"><input type="checkbox" id="zoomToggle"> Zoom</label>
+    </div>
+
+    <div class="hint">Manifest <code>files.json</code> bulunursa dosyalar aşağıda listelenir:</div>
+    <div id="list" class="list hint">Manifest (files.json) yükleniyor…</div>
+
+    <div class="note hint">
+      İpucu: Bu sayfa <code>?model=dosya.glb</code> parametresiyle
+      paylaşılabilir. Örn: <code>?model=models/atlas.glb</code>
+    </div>
   </aside>
-  <model-viewer id="mv" camera-controls auto-rotate shadow-intensity="1" exposure="1.0"
-    alt="3B model görüntüleyici"></model-viewer>
-</main>
-<footer><small>Dosyalarınızı aynı klasöre koyun. (GitHub Pages için uygundur)</small></footer>
+
+  <main class="viewer" id="viewerHost">
+    <model-viewer id="mv"
+      camera-controls
+      shadow-intensity="0.8"
+      exposure="1.0"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      touch-action="pan-y"
+      reveal="auto"
+      environment-visibility="neutral"
+      alt="3B model görüntüleyici">
+      <div class="hint" slot="poster">Model yükleniyor…</div>
+      <div class="hint" slot="progress-bar">Yükleniyor…</div>
+      <button class="btn" slot="ar-button">AR ile Gör</button>
+    </model-viewer>
+    <div id="progress" class="progress hint" style="display:none">Yükleniyor…</div>
+  </main>
+
+  <footer class="row">
+    <div class="hint">Kullanım: <b>index.html</b> ile aynı klasöre .glb'leri ve (opsiyonel) <code>files.json</code>'ı koyun.</div>
+    <div class="spacer"></div>
+    <a class="hint" href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer docs</a>
+  </footer>
+</div>
 
 <script>
-const mv = document.getElementById('mv');
-function setModel(src){ mv.src = src; document.title="Viewer - "+src; }
+(function(){
+  const mv = document.getElementById('mv');
+  const urlInput = document.getElementById('urlInput');
+  const loadBtn  = document.getElementById('loadBtn');
+  const fileInput= document.getElementById('fileInput');
+  const drop = document.getElementById('drop');
+  const list = document.getElementById('list');
+  const filter = document.getElementById('filter');
+  const status = document.getElementById('status');
+  const copyBtn = document.getElementById('copyBtn');
+  const openBtn = document.getElementById('openBtn');
+  const host = document.getElementById('viewerHost');
+  const zoomToggle = document.getElementById('zoomToggle');
 
-document.getElementById('loadBtn').onclick=()=>{
-  const v=document.getElementById('urlInput').value.trim();
-  if(v) setModel(v);
-};
-document.getElementById('fileInput').onchange=(e)=>{
-  const f=e.target.files[0]; if(f){ setModel(URL.createObjectURL(f)); }
-};
+  const BG = {
+    dark: 'linear-gradient(180deg,#0b0f14,#0a0d12)',
+    light: 'linear-gradient(180deg,#e9eef5,#c6d4e8)',
+    transparent: 'transparent'
+  };
 
-// Load manifest
-fetch('files.json').then(r=>r.json()).then(arr=>{
-  const list=document.getElementById('list');
-  arr.forEach(name=>{
-    const d=document.createElement('div');d.className='item';d.textContent=name;
-    d.onclick=()=>setModel(name);
-    list.appendChild(d);
+  function setBg(mode){
+    host.style.background = BG[mode] || BG.dark;
+    document.querySelectorAll('.bgchip').forEach(el=>{
+      el.classList.toggle('active', el.dataset.bg===mode);
+    });
+  }
+
+  function setModel(src, name){
+    mv.src = src;
+    mv.alt = name || src;
+    urlInput.value = name || src;
+    document.title = 'GLB Viewer — ' + (name || src);
+    status.innerHTML = '<span class="ok">Yükleniyor…</span>';
+    document.body.dataset.currentModel = src;
+  }
+
+  // handle ?model=
+  const q = new URLSearchParams(location.search);
+  const qm = q.get('model');
+  if(qm){ setModel(qm, qm); }
+
+  // manual load
+  loadBtn.addEventListener('click', ()=>{
+    const v = urlInput.value.trim();
+    if(v) setModel(v, v);
   });
-}).catch(_=>{});
+  urlInput.addEventListener('keydown', e=> { if(e.key==='Enter') loadBtn.click(); });
+
+  // local file
+  fileInput.addEventListener('change', e=>{
+    const f = e.target.files?.[0]; if(!f) return;
+    const url = URL.createObjectURL(f);
+    setModel(url, f.name);
+  });
+
+  // drag & drop
+  ['dragenter','dragover'].forEach(ev=> drop.addEventListener(ev, e=>{
+    e.preventDefault(); e.stopPropagation(); drop.classList.add('drag'); drop.textContent='Bırakın yükleyelim…';
+  }));
+  ['dragleave','drop'].forEach(ev=> drop.addEventListener(ev, e=>{
+    e.preventDefault(); e.stopPropagation(); drop.classList.remove('drag'); drop.textContent='.glb dosyanızı sürükleyip bırakın ya da üstten seçin.';
+  }));
+  drop.addEventListener('drop', e=>{
+    const f = e.dataTransfer.files?.[0]; if(!f) return;
+    const url = URL.createObjectURL(f);
+    setModel(url, f.name);
+  });
+
+  // manifest list + filter
+  let manifest = [];
+  async function loadManifest(){
+    try{
+      const res = await fetch('files.json', {cache:'no-store'});
+      if(!res.ok) throw new Error('no manifest');
+      manifest = await res.json();
+      list.classList.remove('hint'); renderList();
+    }catch(_){
+      list.textContent = 'Manifest (files.json) bulunamadı.';
+      list.classList.add('hint');
+    }
+  }
+  function renderList(){
+    const term = filter.value.trim().toLowerCase();
+    list.innerHTML = '';
+    (manifest||[])
+      .filter(n => !term || n.toLowerCase().includes(term))
+      .forEach(name => {
+        const row = document.createElement('div');
+        row.className='item';
+        row.innerHTML = '<span>'+name+'</span><small>'+name.split('/').slice(-1)[0]+'</small>';
+        row.addEventListener('click', () => setModel(name, name));
+        list.appendChild(row);
+      });
+    if(list.childElementCount===0){
+      const d = document.createElement('div'); d.className='hint'; d.textContent='Sonuç yok.'; list.appendChild(d);
+    }
+  }
+  filter.addEventListener('input', renderList);
+  loadManifest();
+
+  // model-viewer events
+  mv.addEventListener('load', ()=> { status.innerHTML = '<span class="ok">Yüklendi</span>'; });
+  mv.addEventListener('error', (e)=> { status.innerHTML = '<span class="err">Hata</span>'; console.error(e); });
+
+  // share helpers
+  copyBtn.addEventListener('click', async ()=>{
+    const src = document.body.dataset.currentModel || urlInput.value.trim();
+    if(!src) return;
+    const link = location.origin + location.pathname + '?model=' + encodeURIComponent(src);
+    await navigator.clipboard?.writeText(link);
+    copyBtn.textContent='Kopyalandı!'; setTimeout(()=> copyBtn.textContent='Bağlantı', 1200);
+  });
+  openBtn.addEventListener('click', ()=>{
+    const src = document.body.dataset.currentModel || urlInput.value.trim();
+    if(!src) return;
+    const link = location.origin + location.pathname + '?model=' + encodeURIComponent(src);
+    window.open(link, '_blank');
+  });
+
+  // zoom toggle + default states
+  function applyZoom(){
+    if(zoomToggle.checked){ mv.removeAttribute('disable-zoom'); }
+    else{ mv.setAttribute('disable-zoom',''); }
+  }
+  zoomToggle.addEventListener('change', applyZoom);
+  zoomToggle.checked = true; applyZoom();
+  setBg('dark');
+  document.querySelectorAll('.bgchip').forEach(el=> el.addEventListener('click', ()=> setBg(el.dataset.bg)));
+})();
 </script>
 </body>
 </html>
