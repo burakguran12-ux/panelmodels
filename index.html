@@ -31,7 +31,11 @@
     .chip{border:1px solid var(--border);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);cursor:pointer}
     .spacer{flex:1 1 auto}
     .hint{color:var(--muted);font-size:12px}
-  </style>
+  
+.swchip{display:flex;flex-direction:column;align-items:center;gap:4px}
+.slabel{font-size:10px;color:var(--muted);max-width:72px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+</style>
 </head>
 <body>
   <div class="app">
@@ -182,18 +186,29 @@
     setTimeout(()=> applyInfo.textContent='', 1200);
   }
 
-  function renderPalette(items){
-    swatches.innerHTML = '';
-    items.forEach(it => {
-      const el = document.createElement('span');
-      el.className = 'swatch';
-      if(it['#']) el.style.background = it['#'];
-      if(it.texture) el.style.backgroundImage = 'url('+it.texture+')';
-      el.title = it.name || '';
-      el.addEventListener('click', ()=> it.texture ? applyTexture(it.texture) : applyColor(it['#']));
-      swatches.appendChild(el);
-    });
-  }
+function renderPalette(items){
+  swatches.innerHTML = '';
+  items.forEach(it => {
+    const wrap = document.createElement('div');
+    wrap.className = 'swchip';
+
+    const el = document.createElement('span');
+    el.className = 'swatch';
+    if(it['#']) el.style.background = it['#'];
+    if(it.texture) el.style.backgroundImage = 'url('+it.texture+')';
+    el.title = it.name || '';
+    el.addEventListener('click', ()=> it.texture ? applyTexture(it.texture) : applyColor(it['#']));
+
+    const lbl = document.createElement('div');
+    lbl.className = 'slabel';
+    lbl.textContent = it.name || '';
+
+    wrap.appendChild(el);
+    wrap.appendChild(lbl);
+    swatches.appendChild(wrap);
+  });
+}
+
 
   renderPalette(palette);
 
