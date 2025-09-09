@@ -1,0 +1,82 @@
+[
+  {
+    "name": "108 GOLD CEVİZ",
+    "texture": "materials/108-gold-ceviz.jpg"
+  },
+  {
+    "name": "120 TEAK LEGNO",
+    "texture": "materials/120-teak-legno.jpg"
+  },
+  {
+    "name": "126 LAKE BEYAZ",
+    "texture": "materials/126-lake-beyaz.jpg"
+  },
+  {
+    "name": "128 BUTE BEYAZ",
+    "texture": "materials/128-bute-beyaz.jpg"
+  },
+  {
+    "name": "138 SATEN ANTREASİT",
+    "#": "#4C5053"
+  },
+  {
+    "name": "139 KOYU SATEN ANTRASİT LEGNO",
+    "#": "#2C2B30"
+  },
+  {
+    "name": "146 KANYON LEGNO",
+    "#": "#696057"
+  },
+  {
+    "name": "148 VİZYON LEGNO",
+    "#": "#C1BDB4"
+  },
+  {
+    "name": "166 SATEN KETEN LEGNO",
+    "#": "#968E81"
+  },
+  {
+    "name": "168 AÇIK KANYON",
+    "#": "#9F9A96"
+  },
+  {
+    "name": "171 SOFT ADA YEŞİLİ LEGNO",
+    "#": "#495D51"
+  },
+  {
+    "name": "173 SOFT SU YEŞİLİ LEGNO",
+    "#": "#919D8F"
+  },
+  {
+    "name": "174 PARLAMENT MAVİSİ LEGNO",
+    "#": "#2D3447"
+  },
+  {
+    "name": "175 GRİ MEŞE LEGNO",
+    "texture": "materials/175-gri-mese-legno.jpg"
+  },
+  {
+    "name": "176 ANADOLU CEVİZ LEGNO",
+    "texture": "materials/176-anadolu-ceviz-legno.jpg"
+  },
+  {
+    "name": "179 İTALYAN CEVİZ 2 LEGNO",
+    "texture": "materials/179-italyan-ceviz-2-legno.jpg"
+  },
+  {
+    "name": "200 SOFT TOUCH FIRTINA GRİ",
+    "#": "#53544E"
+  },
+  {
+    "name": "202 SOFT TOUCH YENİ GRİ",
+    "#": "#C0BDAA"
+  },
+  {
+    "name": "Beyaz",
+    "#": "#ECEFF1"
+  },
+  {
+    "name": "Siyah",
+    "#": "#111111"
+  }
+]

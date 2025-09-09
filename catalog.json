@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Atlas Panel",
+    "src": "models/atlas.glb",
+    "thumb": "thumbs/atlas.png",
+    "targetMaterials": [
+      "Panel",
+      "Wood",
+      "Kaplama"
+    ]
+  },
+  {
+    "name": "Diamond Panel",
+    "src": "models/diamond.glb",
+    "thumb": "thumbs/diamond.png",
+    "targetMaterials": [
+      "Panel",
+      "Wood",
+      "Kaplama"
+    ]
+  },
+  {
+    "name": "Rigel Panel",
+    "src": "Rigel.glb",
+    "thumb": "thumbs/rigel.png",
+    "targetMaterials": [
+      "Panel",
+      "Wood",
+      "Kaplama"
+    ]
+  }
+]
