@@ -3,27 +3,18 @@
     "name": "Atlas Panel",
     "src": "models/atlas.glb",
     "thumb": "thumbs/atlas.png",
-    "targetMaterials": [
-      "[Wood Board Cork]1",
-      "hammdf"
-    ]
+    
   },
   {
     "name": "Diamond Panel",
     "src": "models/diamond.glb",
     "thumb": "thumbs/diamond.png",
-    "targetMaterials": [
-      "[Wood Board Cork]1",
-      "hammdf",
-    ]
+    
   },
   {
     "name": "Rigel Panel",
     "src": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
-    "targetMaterials": [
-      "[Wood Board Cork]1",
-      "Color_003",
-    ]
+    
   }
 ]
