@@ -2,19 +2,19 @@
   {
     "name": "Atlas Panel",
     "src": "models/atlas.glb",
-    "thumb": "thumbs/atlas.png",
+    "thumb": "thumbs/atlas.png"
     
-  },
+  }
   {
     "name": "Diamond Panel",
     "src": "models/diamond.glb",
-    "thumb": "thumbs/diamond.png",
+    "thumb": "thumbs/diamond.png"
     
-  },
+  }
   {
     "name": "Rigel Panel",
     "src": "models/rigel.glb",
-    "thumb": "thumbs/rigel.png",
+    "thumb": "thumbs/rigel.png"
     
   }
 ]
