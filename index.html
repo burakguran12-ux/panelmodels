@@ -144,9 +144,7 @@ function hexToRgba(hex){
   const s = hex.replace('#','');
   const h = s.length===3 ? s.split('').map(c=>c+c).join('') : s;
   const v = parseInt(h, 16);
-  const r = (v >> 16) & 255, g = (v >> 8) & 255, b = v & 255;
-  // glTF renkleri 0..1 arası istiyor
-  return [r/255, g/255, b/255, 1.0];
+  return [(v>>16&255)/255, (v>>8&255)/255, (v&255)/255, 1];
 }
 
 async function applyColor(hex){
@@ -157,54 +155,57 @@ async function applyColor(hex){
   for (const mat of mats) {
     try {
       const pmr = mat.pbrMetallicRoughness;
-      // Doku varsa temizle (renk görünsün)
-      if (pmr?.baseColorTexture) pmr.baseColorTexture.setTexture(null);
-      // DOĞRU: Renk set et
+      // Dokuyu temizle ki renk görünsün
+      if (mat.setBaseColorTexture) mat.setBaseColorTexture(null);
+      else if (pmr?.baseColorTexture) pmr.baseColorTexture.setTexture(null);
+      // Rengi ver
       if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor(rgba);
-      else pmr.baseColorFactor = rgba; // eski sürümler için
-    } catch (e) { console.warn('applyColor error', e); }
+      else pmr.baseColorFactor = rgba;
+    } catch (e) { console.warn('applyColor:', e); }
   }
   applyInfo.textContent = 'Renk uygulandı';
-  setTimeout(()=> applyInfo.textContent='', 1200);
+  setTimeout(()=> applyInfo.textContent='', 1000);
 }
 
 async function applyTexture(url){
   const mv = document.getElementById('mv');
   if(!mv.model) return;
-  const tex = await mv.createTexture(url);
   const mats = getTargetMaterials();
+  const tex = await mv.createTexture(url); // aynı origin → CORS sorunsuz
   for (const mat of mats) {
     try {
       const pmr = mat.pbrMetallicRoughness;
-      // DOĞRU: Doku set et
-      if (pmr?.setBaseColorTexture) pmr.setBaseColorTexture(tex);
-      else pmr?.baseColorTexture?.setTexture(tex);
-    } catch (e) { console.warn('applyTexture error', e); }
+      // Olabilecek renk tint’ini sıfırla ki doku orijinal görünsün
+      if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor([1,1,1,1]);
+      else pmr.baseColorFactor = [1,1,1,1];
+      // Dokuyu set et — en sağlam yol: material seviyesinde
+      if (mat.setBaseColorTexture) { 
+        mat.setBaseColorTexture(tex);
+      } else if (pmr?.setBaseColorTexture) {
+        pmr.setBaseColorTexture(tex);
+      } else if (pmr?.baseColorTexture) {
+        pmr.baseColorTexture.setTexture(tex);
+      }
+    } catch (e) { console.warn('applyTexture:', e); }
   }
   applyInfo.textContent = 'Doku uygulandı';
-  setTimeout(()=> applyInfo.textContent='', 1200);
+  setTimeout(()=> applyInfo.textContent='', 1000);
 }
+
 
 
 function getTargetMaterials(){
   const mv = document.getElementById('mv');
   const names = (mv.dataset.target || '')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
+    .split(',').map(s=>s.trim()).filter(Boolean);
 
   const all = mv.model?.materials || [];
-  if (names.length === 0) return all; // katalogta targetMaterials yoksa bilinçli olarak hepsi
+  if (names.length === 0) return all; // katalogta hedef verilmemişse bilinçli olarak hepsi
 
-  // Tam eşleşme + "PanelKaplama.001" gibi varyasyonlar
   const picked = all.filter(m =>
-    names.some(n => m.name === n || m.name.startsWith(n + '.'))
+    names.some(n => m.name === n || m.name.startsWith(n + '.')) // PanelKaplama.001 vb. yakala
   );
-
-  // Eşleşme YOKSA artık hiçbir şeye dokunma (hepsine uygula fallback'i kaldırıldı)
-  if (!picked.length) {
-    console.warn('Hedef malzeme bulunamadı. Mevcut:', all.map(m => m.name));
-  }
+  if (!picked.length) console.warn('Hedef malzeme bulunamadı:', all.map(m=>m.name));
   return picked;
 }
 
