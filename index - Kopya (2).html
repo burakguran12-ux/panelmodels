@@ -4,12 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>PanelModels — Galeri Görüntüleyici</title>
-<link rel="icon" href="favicon.ico?v=3" sizes="any">
+<link rel="icon" href="favicon.ico?v=2" sizes="any">
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <style>
 :root{
   --bg:#0b0f14; --panel:#111821; --text:#eaf0f8; --muted:#a3aebb; --border:#1e2a39; --accent:#68c3ff;
-  --hover-accent:#698C8C;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -19,7 +18,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/
 header{grid-column:1/-1;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 header h1{margin:0;font-size:18px}
 header small{color:var(--muted)}
-.btn{background:#0e141c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;transition:color .15s ease, border-color .15s ease}
+.btn{background:#0e141c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer}
 .btn:hover{border-color:#2c3e55}
 .only-mobile{display:none}
 
@@ -33,7 +32,7 @@ aside.side{padding:12px;background:var(--panel);border-right:1px solid var(--bor
 .viewer{position:relative;background:#000;border-radius:12px;overflow:hidden;margin:0 12px 12px 0}
 model-viewer{width:100%;height:100%;min-height:560px;--poster-color:transparent}
 
-/* Right panel */
+/* Right panel (cards) */
 .controls{position:absolute; top:12px; right:12px; z-index:5; display:flex; flex-direction:column; gap:10px; width: min(320px, 32vw)}
 .card2{background:rgba(10,14,20,.50); backdrop-filter:blur(4px); border:1px solid var(--border); border-radius:12px; padding:10px;}
 .card2 h3{margin:0 0 8px 0; font-size:12px; color:var(--muted); letter-spacing:.3px; text-transform:uppercase}
@@ -41,7 +40,7 @@ model-viewer{width:100%;height:100%;min-height:560px;--poster-color:transparent}
 .row label{font-size:12px; color:var(--muted); width:92px}
 input[type="range"]{width:100%; accent-color:var(--accent)}
 
-/* Collapsible "Sahne" (mobilde) */
+/* Collapsible "Sahne" (mobile) */
 details.card2.scene{padding:0}
 details.card2.scene > summary{list-style:none; cursor:pointer; padding:10px; display:flex; align-items:center}
 details.card2.scene > summary::-webkit-details-marker{display:none}
@@ -50,52 +49,28 @@ details.card2.scene > summary::after{content:'▾'; margin-left:auto; opacity:.6
 details.card2.scene[open] > summary::after{transform:rotate(180deg)}
 details.card2.scene .body{padding:0 10px 10px}
 
-/* Kamera kartı: 1/3 genişlik + kare butonlar */
-.card2.cam{width:33%; align-self:flex-end}
+/* Camera icons (vertical, white) */
 .iconbar{display:flex; flex-direction:column; gap:8px}
-.iconbtn{
-  width:100%;
-  aspect-ratio:1/1;                 /* kare */
-  display:grid; place-items:center;
-  border:1px solid var(--border);
-  background:#0e141c;
-  border-radius:10px;
-  cursor:pointer;
-  color:#fff;                       /* ikon rengi */
-  transition:border-color .15s ease, color .12s ease, background .15s ease
-}
-.iconbtn:hover{border-color:#2c3e55; color:var(--hover-accent)} /* hover rengi #698C8C */
-.iconbtn svg{width:26px; height:26px;}
+.iconbtn{width:100%; height:44px; display:inline-grid; place-items:center; border:1px solid var(--border); background:#0e141c; border-radius:10px; cursor:pointer; color:#fff}
+.iconbtn:hover{border-color:#2c3e55}
+.iconbtn svg{width:26px; height:26px; opacity:1}
 
-/* Alt palet barı */
-.pbar{
-  position:absolute; left:12px; right:12px; bottom:12px; z-index:6;
-  background:transparent;          /* tamamen şeffaf */
-  border:none;                      /* çerçeve yok */
-  padding:6px 10px 10px 10px;      /* daha kompakt */
-  overflow:visible;
-}
-.pbar .title{display:none}          /* başlık gizlendi */
-.swrow{display:flex; gap:12px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin}
+/* Bottom palette bar */
+.pbar{position:absolute; left:12px; right:12px; bottom:12px; z-index:6;
+  background:rgba(10,14,20,.50); border:1px solid var(--border); border-radius:12px; padding:10px; backdrop-filter:blur(4px)}
+.pbar .title{font-size:12px;color:var(--muted);margin:0 0 6px 2px}
+.swrow{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin}
 .swrow::-webkit-scrollbar{height:8px}
 .swrow::-webkit-scrollbar-thumb{background:#253548;border-radius:8px}
-
-/* Swatch — 1.5x büyütme, hover’da 3x */
-.swmini{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:60px;position:relative;overflow:visible}
+.swmini{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:46px;position:relative;overflow:visible}
 .swatch{
-  width:51px;height:51px;           /* 34 -> 51 px (1.5x) */
-  border-radius:10px;border:1px solid var(--border);
-  cursor:pointer;background-size:cover;background-position:center;
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background-size:cover;background-position:center;
   transition:transform .18s cubic-bezier(.2,.6,.2,1), box-shadow .18s ease, outline-color .18s;
-  will-change:transform;
+  will-change:transform
 }
 .swmini:hover .swatch,
-.swatch:focus-visible{transform:scale(3); z-index:5; box-shadow:0 16px 30px rgba(0,0,0,.40); outline:1px solid var(--accent)}
-.slabel{font-size:10px;color:var(--muted);max-width:60px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* Reset butonu – hover & active rengi */
-#bgReset:hover{ color:var(--hover-accent) }
-#bgReset:active{ color:var(--hover-accent) }
+.swatch:focus-visible{transform:scale(2); z-index:5; box-shadow:0 12px 26px rgba(0,0,0,.35); outline:1px solid var(--accent)}
+.slabel{font-size:10px;color:var(--muted);max-width:44px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Mobile */
 @media (max-width: 900px){
@@ -147,7 +122,7 @@ details.card2.scene .body{padding:0 10px 10px}
 
       <!-- Sağ panel -->
       <div class="controls">
-        <!-- Sahne -->
+        <!-- Sahne: mobile'da collapsible -->
         <details id="sceneCard" class="card2 scene" open>
           <summary><h3>Sahne</h3></summary>
           <div class="body">
@@ -166,8 +141,8 @@ details.card2.scene .body{padding:0 10px 10px}
           </div>
         </details>
 
-        <!-- Kamera (dikey, dar) -->
-        <div class="card2 cam">
+        <!-- Kamera (dikey) -->
+        <div class="card2">
           <h3>Kamera</h3>
           <div class="iconbar">
             <button class="iconbtn" data-orbit="0deg 0deg auto" title="Üstten">
@@ -189,7 +164,7 @@ details.card2.scene .body{padding:0 10px 10px}
         </div>
       </div>
 
-      <!-- Alt tek sıra palet (tam şeffaf) -->
+      <!-- Alt tek sıra palet -->
       <div class="pbar">
         <div class="title">Kaplama / Renk</div>
         <div id="swrow" class="swrow"></div>
@@ -204,6 +179,7 @@ details.card2.scene .body{padding:0 10px 10px}
   const swrow = document.getElementById('swrow');
   const host = document.getElementById('viewerHost');
 
+  /* ---------- JSON yükleyici (çoklu yol dene) ---------- */
   async function loadJSON(paths){
     for(const p of paths){
       try{
@@ -214,16 +190,20 @@ details.card2.scene .body{padding:0 10px 10px}
     return null;
   }
 
-  let catalog = await loadJSON(['catalog.json','./catalog.json']) || [];
+  /* ---------- KATALOG ---------- */
+  let catalog = await loadJSON(['catalog.json','./catalog.json']);
   if(!Array.isArray(catalog) || !catalog.length){
-    const arr = await loadJSON(['files.json']);
-    if(arr) catalog = arr.map(name => ({ name, src:name, thumb:'thumbs/default.png' }));
+    try{
+      const arr = await loadJSON(['files.json']);
+      if(arr) catalog = arr.map(name => ({ name, src:name, thumb:'thumbs/default.png' }));
+    }catch{}
   }
   if(!Array.isArray(catalog) || !catalog.length){
     gallery.innerHTML = '<div class="hint">Katalog yok. <code>catalog.json</code> veya <code>files.json</code> ekleyin.</div>';
     return;
   }
 
+  /* ---------- PALET ---------- */
   let palette = await loadJSON(['palette.json','materials/palette.json','./palette.json']);
   if(!Array.isArray(palette)){
     console.warn('palette.json bulunamadı, örnek palet kullanılıyor.');
@@ -235,16 +215,18 @@ details.card2.scene .body{padding:0 10px 10px}
     ];
   }
 
+  /* ---------- GALERİ ---------- */
   function renderGallery(items){
     gallery.innerHTML = '';
     items.forEach(item => {
       const card = document.createElement('div');
       card.className = 'card';
+      const thumb = item.thumb || 'thumbs/default.png';
       const img = new Image();
       img.loading = 'lazy';
-      img.src = item.thumb || 'thumbs/default.png';
+      img.src = thumb;
       img.alt = item.title||item.name||'';
-      img.onerror = ()=>console.warn('Thumb 404:', item.thumb);
+      img.onerror = ()=>console.warn('Thumb 404:', thumb);
       card.appendChild(img);
       const meta = document.createElement('div');
       meta.className='meta';
@@ -266,11 +248,12 @@ details.card2.scene .body{padding:0 10px 10px}
     document.title = 'PanelModels — ' + mv.alt;
   }
 
+  /* ---------- MALZEME HEDEFİ ---------- */
   function getTargetMaterials(){
     const wanted = (mv.dataset.target||'').split(',').map(s=>s.trim()).filter(Boolean);
     const all = mv.model?.materials || [];
-    const kap = all.filter(m => m.name==='PanelKaplama' || m.name?.startsWith('PanelKaplama.'));
-    if (kap.length) return kap;
+    const panelKaplama = all.filter(m => m.name==='PanelKaplama' || m.name?.startsWith('PanelKaplama.'));
+    if (panelKaplama.length) return panelKaplama;
     if (wanted.length){
       const picked = all.filter(m => wanted.some(n => m.name===n || m.name?.startsWith(n+'.')));
       if (picked.length) return picked;
@@ -353,7 +336,7 @@ details.card2.scene .body{padding:0 10px 10px}
     console.log('Materials:', (mv.model?.materials||[]).map(m=>m.name));
   });
 
-  /* Sahne ayarları */
+  /* ---------- SAHNE ---------- */
   const exp = document.getElementById('exp');
   const sh = document.getElementById('shadow');
   const rot = document.getElementById('envrot');
@@ -361,10 +344,10 @@ details.card2.scene .body{padding:0 10px 10px}
   [exp, sh, rot].forEach(i => i.addEventListener('input', applyScene));
   applyScene();
 
-  /* Pastel arkaplan (HSV) */
+  /* ---------- Pastel arkaplan (HSV) ---------- */
   const bgHue = document.getElementById('bgHue');
-  const bgSat = document.getElementById('bgSat');
-  const bgVal = document.getElementById('bgVal');
+  const bgSat = document.getElementById('bgSat'); // 0..35 (%)
+  const bgVal = document.getElementById('bgVal'); // 25..75 (%)
   const bgPrev = document.getElementById('bgPrev');
   const bgReset = document.getElementById('bgReset');
 
@@ -389,7 +372,7 @@ details.card2.scene .body{padding:0 10px 10px}
   });
   applyBg();
 
-  /* Mobil menü */
+  /* ---------- Mobil menü & tam ekran ---------- */
   const side = document.getElementById('side');
   const overlay = document.getElementById('overlay');
   document.getElementById('menuBtn')?.addEventListener('click', () => {
@@ -408,7 +391,7 @@ details.card2.scene .body{padding:0 10px 10px}
     } catch(e){ console.warn('fullscreen error', e); }
   });
 
-  /* Kamera presetleri */
+  /* ---------- Kamera presetleri ---------- */
   document.querySelectorAll('.iconbtn[data-orbit]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const orbit = btn.getAttribute('data-orbit');
@@ -417,7 +400,7 @@ details.card2.scene .body{padding:0 10px 10px}
     });
   });
 
-  /* Sahne kartı: mobilde kapalı, desktopta açık kalsın */
+  /* ---------- Sahne kartı: mobilde kapalı, desktopta açık ---------- */
   const sceneCard = document.getElementById('sceneCard');
   const setSceneOpenByViewport = () => {
     if (window.innerWidth <= 900) sceneCard.removeAttribute('open');
@@ -426,7 +409,7 @@ details.card2.scene .body{padding:0 10px 10px}
   setSceneOpenByViewport();
   window.addEventListener('resize', setSceneOpenByViewport);
 
-  /* Başlangıç modeli */
+  /* ---------- Başlangıç modeli ---------- */
   loadModel(catalog[0]);
 })();
 </script>
