@@ -219,8 +219,8 @@ let currentIdx = 0;
 // Küçük yardımcılar
 const norm = s => (s||'').toLowerCase().replace(/\s+/g,'').normalize('NFKD');
 
-// Model içindeki malzeme bul: sadece hedef isimler (örn PanelKaplama)
-function pickTargetMaterials(model, targets=["PanelKaplama"]) {
+// Model içindeki malzeme bul: sadece hedef isimler (örn mdf-panel)
+function pickTargetMaterials(model, targets=["mdf-panel"]) {
   const wanted = targets.map(norm);
   const allMats = model?.materials || [];
   // 1) Tam eşleşme
@@ -236,7 +236,7 @@ function pickTargetMaterials(model, targets=["PanelKaplama"]) {
 // Doku/renk uygula (yalnız hedef materyaller)
 async function applySwatch(swatch) {
   await mv?.updateComplete;
-  const targets = catalog[currentIdx]?.targetMaterials || ["PanelKaplama"];
+  const targets = catalog[currentIdx]?.targetMaterials || ["mdf-panel"];
   const mats = pickTargetMaterials(mv.model, targets);
   if (!mats.length) return;
 
