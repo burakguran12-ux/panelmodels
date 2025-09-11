@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>PanelModels — Galeri Görüntüleyici</title>
 <link rel="icon" href="favicon.ico?v=5" sizes="any">
+
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script type="module" src="./scripts/x-3d-configurator.js"></script>
+
+
 <style>
 :root{
   --bg:#0b0f14; --panel:#111821; --text:#eaf0f8; --muted:#a3aebb; --border:#1e2a39;
@@ -131,6 +134,8 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
       <div id="gallery" class="grid"></div>
     </aside>
     <div id="overlay" class="overlay" hidden></div>
+    <model-viewer src="./models/antares.glb" camera-controls auto-rotate></model-viewer>
+
 
     <main class="viewer" id="viewerHost">
       <model-viewer id="mv"
