@@ -1,5 +1,15 @@
+
+
 [
   { "name": "Rigel Panel",   "src": "models/rigel.glb",   "thumb": "thumbs/rigel.png",   "targetMaterials": ["PanelKaplama"] },
   { "name": "Atlas Panel",   "src": "models/atlas.glb",   "thumb": "thumbs/atlas.png",   "targetMaterials": ["PanelKaplama"] },
-  { "name": "Diamond Panel", "src": "models/diamond.glb", "thumb": "thumbs/diamond.png", "targetMaterials": ["PanelKaplama"] }
+  { "name": "Diamond Panel", "src": "models/diamond.glb", "thumb": "thumbs/diamond.png", "targetMaterials": ["PanelKaplama"] },
+
+  {
+    "name": "Antares Panel",
+    "src": "models/antares.glb",
+    "thumb": "thumbs/antares.png",
+    "targetMaterials": ["mdf-panel"],
+    "defaults": { "scale": 1.0, "rotationY": 0, "position": [0, 0, 0], "cameraPreset": "iso45" }
+  }
 ]

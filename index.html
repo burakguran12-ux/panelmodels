@@ -4,12 +4,12 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>PanelModels — Galeri Görüntüleyici</title>
-<link rel="icon" href="favicon.ico?v=4" sizes="any">
+<link rel="icon" href="favicon.ico?v=5" sizes="any">
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <style>
 :root{
-  --bg:#0b0f14; --panel:#111821; --text:#eaf0f8; --muted:#a3aebb; --border:#1e2a39; --accent:#68c3ff;
-  --hover-accent:#698C8C; /* vurgular */
+  --bg:#0b0f14; --panel:#111821; --text:#eaf0f8; --muted:#a3aebb; --border:#1e2a39;
+  --accent:#68c3ff; --hover-accent:#698C8C;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -19,7 +19,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/
 header{grid-column:1/-1;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 header h1{margin:0;font-size:18px}
 header small{color:var(--muted)}
-.btn{background:#0e141c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;transition:color .15s ease,border-color .15s ease}
+.btn{background:#0e141c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;transition:color .15s,border-color .15s}
 .btn:hover{border-color:#2c3e55}
 .only-mobile{display:none}
 
@@ -30,18 +30,17 @@ aside.side{padding:12px;background:var(--panel);border-right:1px solid var(--bor
 .card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#000}
 .card .meta{padding:6px 8px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:8px}
 
-.viewer{position:relative;background:#000;border-radius:12px;overflow:hidden;margin:0 12px 12px 0}
+/* Viewer */
+.viewer{position:relative;background:#000;border-radius:12px;overflow:visible;margin:0 12px 12px 0}
 model-viewer{width:100%;height:100%;min-height:560px;--poster-color:transparent}
 
 /* Sağ panel */
-.controls{position:absolute; top:12px; right:12px; z-index:5; display:flex; flex-direction:column; gap:10px; width:min(340px,32vw)}
+.controls{position:absolute; top:12px; right:12px; z-index:20; display:flex; flex-direction:column; gap:10px; width:min(340px,32vw)}
 .card2{background:rgba(10,14,20,.50); backdrop-filter:blur(4px); border:1px solid var(--border); border-radius:12px; padding:10px;}
 .card2 h3{margin:0 0 8px 0; font-size:12px; color:var(--muted); letter-spacing:.3px; text-transform:uppercase}
 .row{display:flex; align-items:center; gap:8px}
 .row label{font-size:12px; color:var(--muted); width:92px}
 input[type="range"]{width:100%; accent-color:var(--accent)}
-
-/* Preset butonları */
 .presetbar{display:flex; gap:6px; margin:8px 0 4px}
 .presetbar .btn{padding:6px 8px; font-size:12px}
 
@@ -51,7 +50,7 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
 .iconbtn{
   width:100%; aspect-ratio:1/1; display:grid; place-items:center;
   border:1px solid var(--border); background:#0e141c; border-radius:10px;
-  cursor:pointer; color:#fff; transition:border-color .15s ease, color .12s ease, background .15s ease
+  cursor:pointer; color:#fff; transition:border-color .15s, color .12s, background .15s
 }
 .iconbtn:hover{border-color:#2c3e55; color:var(--hover-accent)}
 .iconbtn svg{width:26px; height:26px}
@@ -60,23 +59,28 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
 .zoom{flex:1 1 50%; padding:8px 0; text-align:center; border:1px solid var(--border); background:#0e141c; border-radius:10px; cursor:pointer; transition:border-color .15s}
 .zoom:hover{border-color:#2c3e55}
 
-/* Alt palet barı — ortada hizalı */
+/* Alt palet bar — ortalanmış tek sıra */
 .pbar{
-  position:absolute; left:12px; right:12px; bottom:12px; z-index:6;
-  background:transparent; border:none; padding:2px 10px 10px 10px;
-  overflow:visible; pointer-events:auto;
+  position:absolute; left:12px; right:12px; bottom:max(22px, env(safe-area-inset-bottom));
+  z-index:25; background:transparent; border:none; padding:4px 10px 16px 10px; pointer-events:auto;
 }
 .pbar .title{display:none}
-.swrow{
-  position:relative;
-  overflow-x:auto; overflow-y:visible;
-  scrollbar-width:thin; display:block;
-}
-.swrow::-webkit-scrollbar{height:8px}
-.swrow::-webkit-scrollbar-thumb{background:#253548;border-radius:8px}
-.swwrap{display:flex; gap:14px; width:max-content; margin:0 auto; padding-bottom:6px}
 
-/* Swatch — 1.5x default (51px) ve hover’da 2.15x — yukarı doğru pop */
+/* Scroller sarmalı (overflow sorunu çözümü) */
+.swscroll{position:relative; overflow:visible}
+.xscroll{
+  overflow-x:auto; overflow-y:visible; /* bazı tarayıcılarda y=visible yok sayılıyor, o yüzden yukarıdaki wrapper da visible */
+  scrollbar-width:thin;
+  scrollbar-gutter:stable both-edges;
+  padding-bottom:18px; /* hover’da büyüyene nefes */
+}
+.xscroll::-webkit-scrollbar{height:8px}
+.xscroll::-webkit-scrollbar-thumb{background:#253548;border-radius:8px}
+
+/* İçerik */
+.swwrap{display:flex; gap:14px; width:max-content; margin:0 auto}
+
+/* Swatch — default 51px, hover’da 2.15x, yukarı pop */
 .swmini{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:60px;position:relative;overflow:visible}
 .swatch{
   width:51px;height:51px;border-radius:10px;border:1px solid var(--border);
@@ -85,7 +89,7 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
   will-change:transform; transform-origin:bottom center;
 }
 .swmini:hover .swatch,
-.swatch:focus-visible{transform:scale(2.15) translateY(-6px); z-index:5; box-shadow:0 16px 30px rgba(0,0,0,.40); outline:1px solid var(--accent)}
+.swatch:focus-visible{transform:scale(2.15) translateY(-6px); z-index:30; box-shadow:0 16px 30px rgba(0,0,0,.40); outline:1px solid var(--accent)}
 .slabel{font-size:10px;color:var(--muted);max-width:64px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Reset hover rengi */
@@ -129,14 +133,11 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
 
     <main class="viewer" id="viewerHost">
       <model-viewer id="mv"
-        camera-controls
-        shadow-intensity="0.7"
-        exposure="1.0"
-        environment-rotation="0deg"
-        touch-action="pan-y"
-        reveal="auto"
-        alt="3B model görüntüleyici">
-        <div class="hint" slot="poster">Model yükleniyor…</div>
+        camera-controls touch-action="pan-y"
+        shadow-intensity="0.7" exposure="1" environment-rotation="0deg"
+        field-of-view="45deg" min-field-of-view="20deg" max-field-of-view="85deg"
+        min-camera-orbit="auto auto 60%" max-camera-orbit="auto auto 260%"
+        reveal="auto" alt="3B model görüntüleyici">
       </model-viewer>
 
       <!-- Sağ panel -->
@@ -144,17 +145,14 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
         <!-- Sahne -->
         <div id="sceneCard" class="card2">
           <h3>Sahne</h3>
-
           <div class="presetbar">
             <button class="btn" data-preset="studio">Studio</button>
             <button class="btn" data-preset="day">Daylight</button>
             <button class="btn" data-preset="show">Showroom</button>
           </div>
-
           <div class="row"><label>Parlaklık</label><input id="exp" type="range" min="0.3" max="2.0" step="0.05" value="1.0"></div>
           <div class="row" style="margin-top:6px"><label>Gölge</label><input id="shadow" type="range" min="0" max="1" step="0.02" value="0.7"></div>
           <div class="row" style="margin-top:6px"><label>Güneş Açısı</label><input id="envrot" type="range" min="0" max="360" step="1" value="0"></div>
-
           <div class="row" style="margin-top:8px"><label>Arkaplan</label>
             <div style="display:flex;align-items:center;gap:10px">
               <input id="bgHue" type="range" min="0" max="360" step="1" value="180" title="Ton">
@@ -186,7 +184,6 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="6" width="14" height="12" rx="2" transform="skewX(-10)" stroke-width="1.6"/><line x1="12" y1="4" x2="18" y2="8" stroke-width="1.6"/></svg>
             </button>
           </div>
-
           <div class="camextras">
             <div class="row"><label>FOV</label><input id="fov" type="range" min="20" max="80" step="1" value="45"></div>
             <div class="zoomrow">
@@ -199,288 +196,164 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
 
       <!-- Alt tek sıra palet (ortada hizalı) -->
       <div class="pbar">
-        <div class="title">Kaplama / Renk</div>
-        <div id="swrow" class="swrow">
-          <div id="swwrap" class="swwrap"></div>
+        <div class="swscroll">
+          <div id="xscroll" class="xscroll">
+            <div id="swwrap" class="swwrap"></div>
+          </div>
         </div>
       </div>
     </main>
   </div>
 
-<script>
-(async function(){
-  const mv = document.getElementById('mv');
+<script type="module">
+import "@google/model-viewer";
+
+const CATALOG_URL = 'catalog.json';        // doğru kök
+const FILES_URL   = 'files.json';          // doğru kök
+const PALETTE_URL = 'palette.json';        // 404’ü engelle: doğru ad + kök
+const mv = document.querySelector('model-viewer');
+
+let catalog = [], files = [], palette = [];
+let currentIdx = 0;
+
+// Küçük yardımcılar
+const norm = s => (s||'').toLowerCase().replace(/\s+/g,'').normalize('NFKD');
+
+// Model içindeki malzeme bul: sadece hedef isimler (örn PanelKaplama)
+function pickTargetMaterials(model, targets=["PanelKaplama"]) {
+  const wanted = targets.map(norm);
+  const allMats = model?.materials || [];
+  // 1) Tam eşleşme
+  let hits = allMats.filter(m => wanted.includes(norm(m.name)));
+  if (hits.length) return hits;
+  // 2) İçeren eşleşme (kaplama vb. varyasyonlara tolerans)
+  hits = allMats.filter(m => wanted.some(w => norm(m.name).includes(w)));
+  if (hits.length) return hits;
+  // 3) Yedek: PanelIc / iç vs hariç ilk malzeme(ler)
+  return allMats.filter(m => !/panelic|ic|iç|mdf/i.test(m.name));
+}
+
+// Doku/renk uygula (yalnız hedef materyaller)
+async function applySwatch(swatch) {
+  await mv?.updateComplete;
+  const targets = catalog[currentIdx]?.targetMaterials || ["PanelKaplama"];
+  const mats = pickTargetMaterials(mv.model, targets);
+  if (!mats.length) return;
+
+  const isTexture = !!swatch.texture;
+  for (const mat of mats) {
+    const pbr = mat.pbrMetallicRoughness;
+    if (isTexture) {
+      // Doku
+      const tex = await mv.createTexture(swatch.texture, {usage: "baseColorTexture"});
+      pbr.setBaseColorTexture(tex);
+      // Dokusuz renkten kalan tonu sıfırla (tam doku görünsün)
+      pbr.setBaseColorFactor([1,1,1,1]);
+    } else {
+      // Düz renk
+      const color = hexToLinearRGBA(swatch.color || "#ffffff");
+      pbr.setBaseColorTexture(null);
+      pbr.setBaseColorFactor(color);
+    }
+  }
+}
+
+// sRGB hex -> Linear RGBA
+function hexToLinearRGBA(hex){
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const srgb = m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)].map(v=>v/255) : [1,1,1];
+  const lin  = srgb.map(c => (c<=0.04045)?(c/12.92):Math.pow((c+0.055)/1.055,2.4));
+  return [lin[0],lin[1],lin[2],1];
+}
+
+// Katalogtan model yükle + varsayılan poz/scale/rot
+async function loadModel(idx){
+  currentIdx = (idx+catalog.length)%catalog.length;
+  const item = catalog[currentIdx];
+  mv.src = item.src;
+  await mv?.updateComplete;
+
+  // Opsiyonel model-vaka ayarları
+  const d = item.defaults || {};
+  if (d.scale != null)   mv.scale = d.scale;
+  if (d.position)        mv.setAttribute('reveal','auto'), mv.cameraTarget = `${d.position[0]}m ${d.position[1]}m ${d.position[2]}m`;
+  if (d.rotationY != null) mv.turntableRotation = d.rotationY;
+  if (d.cameraPreset)    applyCameraPreset(d.cameraPreset);
+}
+
+// Basit kamera preset’leri
+function applyCameraPreset(name){
+  const map = {
+    front:  {orbit:'0deg 90deg auto'},
+    back:   {orbit:'180deg 90deg auto'},
+    left:   {orbit:'-90deg 90deg auto'},
+    right:  {orbit:'90deg 90deg auto'},
+    iso45:  {orbit:'30deg 80deg auto'}
+  };
+  const p = map[name||'iso45'];
+  if (p) mv.cameraOrbit = p.orbit;
+}
+
+// Klavye kısayolları
+window.addEventListener('keydown', (e)=>{
+  if (e.key>='1' && e.key<='9'){
+    const i = Number(e.key)-1;
+    if (i < catalog.length) loadModel(i);
+  }
+  if (e.key === 'ArrowLeft')  mv.turntableRotation -= 5;
+  if (e.key === 'ArrowRight') mv.turntableRotation += 5;
+  if (e.key === '+') mv.zoom( 0.15);
+  if (e.key === '-') mv.zoom(-0.15);
+  if (e.key.toLowerCase()==='r') mv.resetTurntableRotation();
+});
+
+// ---- Başlat ----
+(async ()=>{
+  // Cache-busting: statik host’ta update sonrası eski dosya gelmesin
+  const bust = `?v=${Date.now()}`;
+  [catalog, files, palette] = await Promise.all([
+    fetch(CATALOG_URL + bust).then(r=>r.json()),
+    fetch(FILES_URL   + bust).then(r=>r.json()),
+    fetch(PALETTE_URL + bust).then(r=>r.json()).catch(()=>[])
+  ]);
+
+  // Galeri kartlarını oluştur (thumb yoksa fallback)
   const gallery = document.getElementById('gallery');
-  const swrow = document.getElementById('swrow');
-  const swwrap = document.getElementById('swwrap');
-  const host = document.getElementById('viewerHost');
-
-  /* ---------- helpers ---------- */
-  async function loadJSON(paths){
-    for(const p of paths){
-      try{ const r = await fetch(p, {cache:'no-store'}); if(r.ok) return await r.json(); }catch(e){}
-    } return null;
-  }
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-
-  /* ---------- data ---------- */
-  let catalog = await loadJSON(['catalog.json','./catalog.json']) || [];
-  if(!Array.isArray(catalog) || !catalog.length){
-    const arr = await loadJSON(['files.json']);
-    if(arr) catalog = arr.map(name => ({ name, src:name, thumb:'thumbs/default.png' }));
-  }
-  if(!Array.isArray(catalog) || !catalog.length){
-    gallery.innerHTML = '<div class="hint">Katalog yok. <code>catalog.json</code> veya <code>files.json</code> ekleyin.</div>';
-    return;
-  }
-
-  let palette = await loadJSON(['palette.json','materials/palette.json','./palette.json']);
-  if(!Array.isArray(palette)){
-    palette = [
-      {"name":"Antrasit","#":"#2F343A"},
-      {"name":"Teak Doku","texture":"materials/teak.png"},
-      {"name":"Beyaz","#":"#ECEFF1"},
-      {"name":"Siyah","#":"#121212"}
-    ];
-  }
-
-  /* ---------- gallery ---------- */
-  function renderGallery(items){
+  if (gallery) {
     gallery.innerHTML = '';
-    items.forEach(item => {
+    catalog.forEach((it, i)=>{
       const card = document.createElement('div');
       card.className = 'card';
-      const img = new Image();
-      img.loading = 'lazy';
-      img.src = item.thumb || 'thumbs/default.png';
-      img.alt = item.title||item.name||'';
-      img.onerror = ()=>console.warn('Thumb 404:', item.thumb);
-      card.appendChild(img);
-      const meta = document.createElement('div');
-      meta.className='meta';
-      meta.innerHTML = `<span>${item.title||item.name||item.src}</span><span>${item.size||''}</span>`;
-      card.appendChild(meta);
-      card.addEventListener('click', ()=> loadModel(item));
+      card.innerHTML = `
+        <img loading="lazy" src="${it.thumb || 'thumbs/default.png'}" alt="">
+        <div class="meta">${it.name}</div>`;
+      card.onclick = ()=>loadModel(i);
       gallery.appendChild(card);
     });
   }
-  renderGallery(catalog);
 
-  function loadModel(item){
-    mv.src = item.src;
-    mv.alt = item.title || item.name || item.src;
-    const targets = (item.targetMaterials && item.targetMaterials.length)
-      ? item.targetMaterials
-      : ['PanelKaplama'];
-    mv.dataset.target = targets.join(',');
-    document.title = 'PanelModels — ' + mv.alt;
-  }
-
-  /* ---------- materials helpers ---------- */
-  function getTargetMaterials(){
-    const wanted = (mv.dataset.target||'').split(',').map(s=>s.trim()).filter(Boolean);
-    const all = mv.model?.materials || [];
-    const kap = all.filter(m => m.name==='PanelKaplama' || m.name?.startsWith('PanelKaplama.'));
-    if (kap.length) return kap;
-    if (wanted.length){
-      const picked = all.filter(m => wanted.some(n => m.name===n || m.name?.startsWith(n+'.')));
-      if (picked.length) return picked;
-    }
-    console.warn('Hedef malzeme bulunamadı, tüm malzemeler boyanacak:', all.map(m=>m.name));
-    return all;
-  }
-  function hexToRgba(hex){
-    const s = hex.replace('#','');
-    const h = s.length===3 ? s.split('').map(c=>c+c).join('') : s;
-    const v = parseInt(h, 16);
-    return [(v>>16&255)/255, (v>>8&255)/255, (v&255)/255, 1];
-  }
-
-  async function applyColor(hex){
-    if(!mv.model) return;
-    const mats = getTargetMaterials();
-    const rgba = hexToRgba(hex);
-    for (const mat of mats) {
-      try {
-        const pmr = mat.pbrMetallicRoughness;
-        if (mat.setBaseColorTexture) mat.setBaseColorTexture(null);
-        else if (pmr?.baseColorTexture) pmr.baseColorTexture.setTexture(null);
-        if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor(rgba);
-        else pmr.baseColorFactor = rgba;
-      } catch (e) { console.warn('applyColor:', e); }
-    }
-  }
-
-  const texCache = new Map();
-  async function applyTexture(url){
-    if(!mv.model) return;
-    try{
-      let tex = texCache.get(url);
-      if(!tex){ tex = await mv.createTexture(url); texCache.set(url, tex); }
-      const mats = getTargetMaterials();
-      for (const mat of mats) {
-        const pmr = mat.pbrMetallicRoughness;
-        if (pmr?.setBaseColorFactor) pmr.setBaseColorFactor([1,1,1,1]);
-        else pmr.baseColorFactor = [1,1,1,1];
-        if (mat.setBaseColorTexture) { mat.setBaseColorTexture(tex); }
-        else if (pmr?.setBaseColorTexture) { pmr.setBaseColorTexture(tex); }
-        else if (pmr?.baseColorTexture) { pmr.baseColorTexture.setTexture(tex); }
-      }
-    }catch(e){ console.warn('Texture yüklenemedi:', url, e); }
-  }
-
-  /* ---------- palette row (centered) ---------- */
-  function renderPaletteRow(items){
-    swwrap.innerHTML = '';
-    items.forEach(it => {
-      const wrap = document.createElement('div');
-      wrap.className = 'swmini';
+  // Palet çubukları (tek sırada, scroll ile kayar)
+  const row = document.getElementById('swrow');
+  if (row && palette.length) {
+    row.innerHTML = '';
+    palette.forEach(sw=>{
       const el = document.createElement('span');
       el.className = 'swatch';
-      el.title = it.name || '';
-      if(it['#']) el.style.background = it['#'];
-      if(it.texture){
-        el.style.backgroundImage = 'url('+it.texture+')';
-        const testImg = new Image(); testImg.src = it.texture; testImg.onerror = ()=>console.warn('Texture 404:', it.texture);
-      }
-      el.addEventListener('click', ()=> it.texture ? applyTexture(it.texture) : applyColor(it['#']));
-      const lbl = document.createElement('div'); lbl.className = 'slabel'; lbl.textContent = it.name || '';
-      wrap.appendChild(el); wrap.appendChild(lbl); swwrap.appendChild(wrap);
+      if (sw.texture) el.style.backgroundImage = `url(${sw.texture})`;
+      if (sw.color)   el.style.backgroundColor = sw.color;
+      el.title = sw.name || '';
+      el.onclick = ()=>applySwatch(sw);
+      row.appendChild(el);
     });
-    requestAnimationFrame(centerRow); // ilk yüklemede ortala
   }
-  function centerRow(){
-    // içerik toplam genişlik ölçümü (swwrap already width:max-content)
-    const view = swrow.clientWidth;
-    const content = swwrap.scrollWidth;
-    // sığıyorsa ortada kalsın (margin:auto zaten), sığmıyorsa scroll'ı merkeze al
-    if (content > view){
-      swrow.scrollLeft = (content - view)/2;
-    } else {
-      swrow.scrollLeft = 0;
-    }
-  }
-  renderPaletteRow(palette);
-  window.addEventListener('resize', ()=>{ clearTimeout(window.__ctr); window.__ctr=setTimeout(centerRow,120); });
 
-  mv.addEventListener('load', ()=> {
-    console.log('Materials:', (mv.model?.materials||[]).map(m=>m.name));
-  });
-
-  /* ---------- scene controls ---------- */
-  const exp = document.getElementById('exp');
-  const sh  = document.getElementById('shadow');
-  const rot = document.getElementById('envrot');
-  const applyScene = () => { mv.exposure = Number(exp.value); mv.shadowIntensity = Number(sh.value); mv.environmentRotation = rot.value + 'deg'; };
-  [exp, sh, rot].forEach(i => i.addEventListener('input', applyScene));
-  applyScene();
-
-  /* Presets */
-  function applyPreset(kind){
-    if(kind==='studio'){ exp.value=1.25; sh.value=0.5; rot.value=30; }
-    else if(kind==='day'){ exp.value=1.10; sh.value=0.8; rot.value=120; }
-    else if(kind==='show'){ exp.value=0.95; sh.value=0.65; rot.value=300; }
-    applyScene();
-  }
-  document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>applyPreset(b.dataset.preset)));
-
-  /* Pastel arkaplan (HSV) */
-  const bgHue = document.getElementById('bgHue');
-  const bgSat = document.getElementById('bgSat');
-  const bgVal = document.getElementById('bgVal');
-  const bgPrev= document.getElementById('bgPrev');
-  const bgReset= document.getElementById('bgReset');
-
-  function hsvToRgb(h,s,v){
-    s/=100; v/=100;
-    const c=v*s, x=c*(1-Math.abs(((h/60)%2)-1)), m=v-c;
-    let r=0,g=0,b=0;
-    if (0<=h&&h<60){r=c;g=x;b=0;} else if (60<=h&&h<120){r=x;g=c;b=0;}
-    else if (120<=h&&h<180){r=0;g=c;b=x;} else if (180<=h&&h<240){r=0;g=x;b=c;}
-    else if (240<=h&&h<300){r=x;g=0;b=c;} else {r=0;g=0;b=c;}
-    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
-  }
-  function applyBg(){
-    const [r,g,b]=hsvToRgb(Number(bgHue.value), Number(bgSat.value), Number(bgVal.value));
-    const css=`rgb(${r}, ${g}, ${b})`;
-    host.style.background=css; bgPrev.style.background=css;
-  }
-  [bgHue,bgSat,bgVal].forEach(i=>i.addEventListener('input',applyBg));
-  // Reset: arka plan #698C8C
-  bgReset.addEventListener('click', ()=>{
-    const hex = '#698C8C';
-    host.style.background = hex; bgPrev.style.background = hex;
-  });
-  applyBg();
-
-  /* ---------- camera ---------- */
-  const fov = document.getElementById('fov');
-  const zoomOutBtn = document.getElementById('zoomOut');
-  const zoomInBtn  = document.getElementById('zoomIn');
-
-  // Güncel orbit değerini takip et (radius’u kontrol edeceğiz)
-  let orbit = {theta:'0deg', phi:'75deg', radius:'auto'};
-  const syncOrbit = ()=>{
-    try{
-      const o = mv.getCameraOrbit?.();
-      if(o){ orbit={theta:o.theta+'deg', phi:o.phi+'deg', radius:(o.radius?o.radius:'auto')}; }
-      else {
-        const s = mv.getAttribute('camera-orbit')||'0deg 75deg auto';
-        const [t,p,r] = s.split(' ');
-        orbit={theta:t||'0deg', phi:p||'75deg', radius:r||'auto'};
-      }
-    }catch(e){}
-  };
-  mv.addEventListener('camera-change', syncOrbit);
-
-  fov.addEventListener('input', ()=>{
-    mv.fieldOfView = fov.value + 'deg';
-  });
-
-  function setRadius(mult){ // radius ‘auto’ ise bir başlangıç değeri ver
-    syncOrbit();
-    let r = orbit.radius;
-    if(r==='auto') r = 1.4; // başlangıç uzaklığı (biraz daha uzaktan)
-    r = Number(r);
-    r = clamp(r*mult, 0.3, 8.0); // daha geniş zoom-out aralığı
-    mv.setAttribute('camera-orbit', `${orbit.theta} ${orbit.phi} ${r}m`);
-  }
-  zoomOutBtn.addEventListener('click', ()=> setRadius(1.18)); // “bir tık daha uzak”
-  zoomInBtn .addEventListener('click', ()=> setRadius(0.85));
-
-  // Preset orbit butonları
-  document.querySelectorAll('.iconbtn[data-orbit]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const orbitStr = btn.getAttribute('data-orbit');
-      mv.setAttribute('camera-orbit', orbitStr);
-      mv.setAttribute('camera-target', 'auto');
-    });
-  });
-
-  /* ---------- mobile menu ---------- */
-  const side = document.getElementById('side');
-  const overlay = document.getElementById('overlay');
-  document.getElementById('menuBtn')?.addEventListener('click', () => {
-    const isOpen = side.classList.toggle('open');
-    overlay.hidden = !isOpen;
-    document.documentElement.style.overflow = isOpen ? 'hidden' : '';
-  });
-  overlay?.addEventListener('click', () => {
-    side.classList.remove('open'); overlay.hidden = true;
-    document.documentElement.style.overflow = '';
-  });
-  document.getElementById('fsBtn')?.addEventListener('click', async () => {
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await (mv.requestFullscreen?.() || document.documentElement.requestFullscreen());
-    } catch(e){ console.warn('fullscreen error', e); }
-  });
-
-  /* ---------- başlangıç ---------- */
-  function firstCenter(){ centerRow(); window.removeEventListener('load',firstCenter); }
-  window.addEventListener('load', firstCenter);
-  loadModel(catalog[0]);
+  // URL’de ?model=… varsa ona git, yoksa ilk model
+  const prm = new URLSearchParams(location.search);
+  const pModel = prm.get('model');
+  const found = catalog.findIndex(c => c.src === pModel);
+  await loadModel(found >= 0 ? found : 0);
 })();
 </script>
+
 </body>
 </html>
