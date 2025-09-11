@@ -3,9 +3,7 @@
     "name": "Antares Panel",
     "src": "models/antares.glb",
     "thumb": "thumbs/antares.png",
-    "targetMaterials": [
-      "mdf-panel"
-    ],
+    "targetMaterials": ["mdf-panel"],
     "defaults": {
       "cameraPreset": "iso45",
       "rotationY": 0

@@ -1,75 +1,92 @@
 [
   {
-    "name": "108 GOLD CEVİZ",
+    "id": "108-gold-ceviz",
+    "name": "Gold Ceviz",
     "texture": "materials/108-gold-ceviz.jpg"
   },
   {
-    "name": "120 TEAK LEGNO",
+    "id": "120-teak-legno",
+    "name": "Teak Legno",
     "texture": "materials/120-teak-legno.jpg"
   },
   {
-    "name": "126 LAKE BEYAZ",
+    "id": "126-lake-beyaz",
+    "name": "Lake Beyaz",
     "texture": "materials/126-lake-beyaz.jpg"
   },
   {
-    "name": "128 BUTE BEYAZ",
+    "id": "128-bute-beyaz",
+    "name": "Bute Beyaz",
     "texture": "materials/128-bute-beyaz.jpg"
   },
   {
-    "name": "138 SATEN ANTREASİT",
-    "#": "#4C5053"
+    "id": "138-saten-antreasit",
+    "name": "Saten Antreasit",
+    "texture": "materials/138-saten-antreasit.jpg"
   },
   {
-    "name": "139 KOYU SATEN ANTRASİT LEGNO",
-    "#": "#2C2B30"
+    "id": "139-koyu-saten-antreasit-legno",
+    "name": "Koyu Saten Antreasit Legno",
+    "texture": "materials/139-koyu-saten-antreasit-legno.jpg"
   },
   {
-    "name": "146 KANYON LEGNO",
-    "#": "#696057"
+    "id": "146-kanyon-legno",
+    "name": "Kanyon Legno",
+    "texture": "materials/146-kanyon-legno.jpg"
   },
   {
-    "name": "148 VİZYON LEGNO",
-    "#": "#C1BDB4"
+    "id": "148-vizyon-legno",
+    "name": "Vizyon Legno",
+    "texture": "materials/148-vizyon-legno.jpg"
   },
   {
-    "name": "166 SATEN KETEN LEGNO",
-    "#": "#968E81"
+    "id": "166-saten-keten-legno",
+    "name": "Saten Keten Legno",
+    "texture": "materials/166-saten-keten-legno.jpg"
   },
   {
-    "name": "168 AÇIK KANYON",
-    "#": "#9F9A96"
+    "id": "168-acik-kanyon",
+    "name": "Ack Kanyon",
+    "texture": "materials/168-acik-kanyon.jpg"
   },
   {
-    "name": "171 SOFT ADA YEŞİLİ LEGNO",
-    "#": "#495D51"
+    "id": "171-soft-ada-yesili-legno",
+    "name": "Soft Ada Yesili Legno",
+    "texture": "materials/171-soft-ada-yesili-legno.jpg"
   },
   {
-    "name": "173 SOFT SU YEŞİLİ LEGNO",
-    "#": "#919D8F"
+    "id": "173-soft-su-yesili-legno",
+    "name": "Soft Su Yesili Legno",
+    "texture": "materials/173-soft-su-yesili-legno.jpg"
   },
   {
-    "name": "174 PARLAMENT MAVİSİ LEGNO",
-    "#": "#2D3447"
+    "id": "174-parlament-mavisi-legno",
+    "name": "Parlament Mavisi Legno",
+    "texture": "materials/174-parlament-mavisi-legno.jpg"
   },
   {
-    "name": "175 GRİ MEŞE LEGNO",
+    "id": "175-gri-mese-legno",
+    "name": "Gri Mese Legno",
     "texture": "materials/175-gri-mese-legno.jpg"
   },
   {
-    "name": "176 ANADOLU CEVİZ LEGNO",
+    "id": "176-anadolu-ceviz-legno",
+    "name": "Anadolu Ceviz Legno",
     "texture": "materials/176-anadolu-ceviz-legno.jpg"
   },
   {
-    "name": "179 İTALYAN CEVİZ 2 LEGNO",
+    "id": "179-italyan-ceviz-2-legno",
+    "name": "italyan Ceviz 2 Legno",
     "texture": "materials/179-italyan-ceviz-2-legno.jpg"
   },
   {
-    "name": "200 SOFT TOUCH FIRTINA GRİ",
-    "#": "#53544E"
+    "id": "200-soft-touch-firtina-gri",
+    "name": "Soft Touch Firtina Gri",
+    "texture": "materials/200-soft-touch-firtina-gri.jpg"
   },
   {
-    "name": "202 SOFT TOUCH YENİ GRİ",
-    "#": "#C0BDAA"
+    "id": "202-soft-touch-yeni-gri",
+    "name": "Soft Touch Yeni Gri",
+    "texture": "materials/202-soft-touch-yeni-gri.jpg"
   }
-
 ]

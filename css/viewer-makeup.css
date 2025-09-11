@@ -1,0 +1,200 @@
+
+/* === PanelModels: Minimal, fast, customer-friendly makeover === */
+/* Theme tokens */
+:root{
+  --bg:#0f172a;           /* slate-900 */
+  --panel:#111826ee;      /* slightly transparent */
+  --muted:#1f2937;        /* slate-800 */
+  --card:#0b1222;         /* slate-950-ish */
+  --text:#e5e7eb;         /* slate-200 */
+  --text-dim:#9ca3af;     /* slate-400 */
+  --accent:#22d3ee;       /* cyan-400 */
+  --accent-2:#94a3b8;     /* slate-400 */
+  --border:#1f2937;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --radius:18px;
+  --radius-sm:12px;
+  --gap:14px;
+  --blur:10px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:radial-gradient(1200px 800px at 70% -10%, #1e293b 0%, var(--bg) 55%);
+  color:var(--text);
+  font:500 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* Layout grid */
+.pm-app{
+  display:grid;
+  grid-template-columns: 280px 1fr 96px;
+  grid-template-rows: 56px 1fr auto;
+  grid-template-areas:
+    "top top top"
+    "left main right"
+    "left palette right";
+  gap: var(--gap);
+  padding: var(--gap);
+  height:100dvh;
+}
+
+/* Top bar */
+.pm-top{
+  grid-area: top;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background: linear-gradient(180deg, rgba(17,24,39,.85), rgba(17,24,39,.65));
+  backdrop-filter: blur(var(--blur));
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+}
+.pm-brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px;}
+.pm-brand .dot{width:8px;height:8px;border-radius:999px;background:var(--accent);display:inline-block;box-shadow:0 0 12px var(--accent);}
+
+/* Sidebar (model catalog) */
+.pm-left{
+  grid-area:left;
+  background: rgba(17,24,39,.65);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  padding:12px;
+  overflow:auto;
+  box-shadow: var(--shadow);
+}
+.pm-section-title{
+  font-size:12px;
+  letter-spacing:.12em;
+  color:var(--text-dim);
+  margin:2px 4px 10px;
+  text-transform:uppercase;
+}
+.pm-card-grid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:10px;
+}
+.pm-card{
+  display:grid;
+  grid-template-columns: 56px 1fr auto;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg, #0c111b, #0b1320);
+  border-radius: var(--radius-sm);
+  transition: transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .2s ease;
+  cursor:pointer;
+}
+.pm-card:hover{ transform:translateY(-2px); border-color:#334155; box-shadow:0 8px 22px rgba(0,0,0,.35); }
+.pm-thumb{width:56px;height:42px;border-radius:10px;object-fit:cover;border:1px solid var(--border);background:#0b1222;}
+.pm-card-title{font-weight:600}
+.pm-card-sub{font-size:12px;color:var(--text-dim)}
+.pm-chip{
+  font-size:11px;padding:4px 8px;border-radius:999px;
+  border:1px solid #2a3344;color:#a3b2c5;background:#0e1726;
+}
+
+/* Main viewer */
+.pm-main{
+  grid-area:main;
+  position:relative;
+  border-radius: var(--radius);
+  overflow:hidden;
+  background: radial-gradient(900px 600px at 50% 0%, #0b1222 0%, #0a0f1a 40%, #04070c 100%);
+  border:1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.pm-canvas{position:absolute; inset:0;}
+.pm-overlay{
+  position:absolute; right:14px; top:14px; display:flex; gap:8px;
+}
+
+/* Right panel (camera tools) → becomes a slim vertical dock */
+.pm-right{
+  grid-area:right;
+  display:flex; flex-direction:column; gap:10px;
+  background: rgba(17,24,39,.55);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  padding:10px;
+  box-shadow: var(--shadow);
+  overflow:auto;
+  max-height: calc(100dvh - 2*var(--gap) - 56px);
+}
+.pm-tool{
+  display:grid; place-items:center;
+  width:72px; height:72px;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg,#0c1220,#0a101b);
+  transition: transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .2s ease;
+  cursor:pointer;
+  user-select:none;
+}
+.pm-tool:hover{ transform: translateY(-2px); border-color:#324256; box-shadow:0 8px 22px rgba(0,0,0,.35); }
+.pm-tool:active{ transform: translateY(0); }
+.pm-tool span{font-size:12px;color:var(--text-dim);}
+
+/* Bottom palette – fixed height and never overlaps right panel */
+.pm-palette{
+  grid-area: palette;
+  display:flex; align-items:center; gap:8px;
+  background: rgba(17,24,39,.55);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  padding:10px;
+  box-shadow: var(--shadow);
+  min-height: 90px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width: thin;
+}
+.pm-swatch{
+  width:44px; height:44px; border-radius:12px;
+  border:1px solid var(--border);
+  background:#111827;
+  flex:0 0 auto;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .2s ease;
+  cursor:pointer;
+}
+.pm-swatch:hover{ transform: translateY(-2px); border-color:#334155; box-shadow:0 8px 18px rgba(0,0,0,.35); }
+.pm-swatch.is-active{ outline:2px solid var(--accent); box-shadow:0 0 0 4px rgba(34,211,238,.18) }
+
+/* Mini buttons */
+.btn{
+  appearance:none; border:1px solid var(--border);
+  background:linear-gradient(180deg,#0e1726,#0c1320);
+  color:var(--text); padding:8px 12px;
+  border-radius:12px; font-weight:600;
+  transition:transform .12s ease, border-color .12s ease, box-shadow .2s ease;
+  cursor:pointer;
+}
+.btn:hover{ transform:translateY(-1px); border-color:#334155; box-shadow:0 8px 18px rgba(0,0,0,.35); }
+.btn:active{ transform:translateY(0) }
+
+/* Badges */
+.badge{font-size:11px;color:#93a3b5;border:1px solid #2a3344;background:#0e1726;padding:3px 8px;border-radius:999px}
+
+/* Responsive tweaks */
+@media (max-width: 1100px){
+  .pm-app{ grid-template-columns: 1fr; grid-template-rows: 56px auto auto auto; grid-template-areas:
+    "top" "main" "palette" "left"; }
+  .pm-right{ position:fixed; right:12px; bottom:112px; width:auto; height:auto; padding:8px; gap:8px; z-index:30; background:transparent; border:none; box-shadow:none; }
+  .pm-right .pm-tool{ width:56px; height:56px; border-radius:14px; }
+  .pm-left{ max-height:38vh }
+}
+
+@media (max-width: 640px){
+  .pm-app{ gap:10px; padding:10px }
+  .pm-top{ border-radius:14px }
+  .pm-left, .pm-right, .pm-palette{ border-radius:14px }
+  .pm-card{ grid-template-columns:48px 1fr auto }
+  .pm-thumb{ width:48px;height:36px;border-radius:8px }
+}

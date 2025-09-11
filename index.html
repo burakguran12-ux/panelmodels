@@ -1,124 +1,40 @@
 <!doctype html>
 <html lang="tr">
+
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PanelModels — Galeri Görüntüleyici</title>
-<link rel="icon" href="favicon.ico?v=5" sizes="any">
-<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-<style>
-:root{
-  --bg:#0b0f14; --panel:#111821; --text:#eaf0f8; --muted:#a3aebb; --border:#1e2a39;
-  --accent:#68c3ff; --hover-accent:#698C8C;
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PanelModels — Galeri Görüntüleyici</title>
+  <link rel="icon" href="favicon.ico?v=5" sizes="any">
 
-/* Layout */
-.app{display:grid;grid-template-columns:320px 1fr;grid-template-rows:auto 1fr;gap:12px;height:100%}
-header{grid-column:1/-1;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-header h1{margin:0;font-size:18px}
-header small{color:var(--muted)}
-.btn{background:#0e141c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;transition:color .15s,border-color .15s}
-.btn:hover{border-color:#2c3e55}
-.only-mobile{display:none}
+  <!-- Model Viewer -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-aside.side{padding:12px;background:var(--panel);border-right:1px solid var(--border);overflow:auto}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
-.card{background:#0e141c;border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
-.card:hover{outline:1px solid #29415a}
-.card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#000}
-.card .meta{padding:6px 8px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:8px}
+  <!-- Yeni minimal tasarım -->
+  <link rel="stylesheet" href="css/viewer-makeup.css">
 
-/* Viewer */
-.viewer{position:relative;background:#000;border-radius:12px;overflow:visible;margin:0 12px 12px 0}
-model-viewer{width:100%;height:100%;min-height:560px;--poster-color:transparent}
+  <style>
+    :root {
+      /* İstersen markana göre güncelle */
+      --accent: #68c3ff;
+      --hover-accent: #698C8C;
+    }
 
-/* Sağ panel */
-.controls{position:absolute; top:12px; right:12px; z-index:20; display:flex; flex-direction:column; gap:10px; width:min(340px,32vw)}
-.card2{background:rgba(10,14,20,.50); backdrop-filter:blur(4px); border:1px solid var(--border); border-radius:12px; padding:10px;}
-.card2 h3{margin:0 0 8px 0; font-size:12px; color:var(--muted); letter-spacing:.3px; text-transform:uppercase}
-.row{display:flex; align-items:center; gap:8px}
-.row label{font-size:12px; color:var(--muted); width:92px}
-input[type="range"]{width:100%; accent-color:var(--accent)}
-.presetbar{display:flex; gap:6px; margin:8px 0 4px}
-.presetbar .btn{padding:6px 8px; font-size:12px}
-
-/* Kamera kartı: dikey + kare ikonlar + zoom/FOV */
-.card2.cam{width:33%; align-self:flex-end}
-.iconbar{display:flex; flex-direction:column; gap:8px}
-.iconbtn{
-  width:100%; aspect-ratio:1/1; display:grid; place-items:center;
-  border:1px solid var(--border); background:#0e141c; border-radius:10px;
-  cursor:pointer; color:#fff; transition:border-color .15s, color .12s, background .15s
-}
-.iconbtn:hover{border-color:#2c3e55; color:var(--hover-accent)}
-.iconbtn svg{width:26px; height:26px}
-.camextras{margin-top:8px; display:flex; flex-direction:column; gap:8px}
-.camextras .zoomrow{display:flex; gap:8px}
-.zoom{flex:1 1 50%; padding:8px 0; text-align:center; border:1px solid var(--border); background:#0e141c; border-radius:10px; cursor:pointer; transition:border-color .15s}
-.zoom:hover{border-color:#2c3e55}
-
-/* Alt palet bar — ortalanmış tek sıra */
-.pbar{
-  position:absolute; left:12px; right:12px; bottom:max(22px, env(safe-area-inset-bottom));
-  z-index:25; background:transparent; border:none; padding:4px 10px 16px 10px; pointer-events:auto;
-}
-.pbar .title{display:none}
-
-/* Scroller sarmalı (overflow sorunu çözümü) */
-.swscroll{position:relative; overflow:visible}
-.xscroll{
-  overflow-x:auto; overflow-y:visible; /* bazı tarayıcılarda y=visible yok sayılıyor, o yüzden yukarıdaki wrapper da visible */
-  scrollbar-width:thin;
-  scrollbar-gutter:stable both-edges;
-  padding-bottom:18px; /* hover’da büyüyene nefes */
-}
-.xscroll::-webkit-scrollbar{height:8px}
-.xscroll::-webkit-scrollbar-thumb{background:#253548;border-radius:8px}
-
-/* İçerik */
-.swwrap{display:flex; gap:14px; width:max-content; margin:0 auto}
-
-/* Swatch — default 51px, hover’da 2.15x, yukarı pop */
-.swmini{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:60px;position:relative;overflow:visible}
-.swatch{
-  width:51px;height:51px;border-radius:10px;border:1px solid var(--border);
-  cursor:pointer;background-size:cover;background-position:center;
-  transition:transform .18s cubic-bezier(.2,.6,.2,1), box-shadow .18s ease, outline-color .18s;
-  will-change:transform; transform-origin:bottom center;
-}
-.swmini:hover .swatch,
-.swatch:focus-visible{transform:scale(2.15) translateY(-6px); z-index:30; box-shadow:0 16px 30px rgba(0,0,0,.40); outline:1px solid var(--accent)}
-.slabel{font-size:10px;color:var(--muted);max-width:64px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* Reset hover rengi */
-#bgReset:hover{ color:var(--hover-accent) }
-#bgReset:active{ color:var(--hover-accent) }
-
-/* Mobile tweaks (mevcut mobil düzeni koruyoruz) */
-@media (max-width: 900px){
-  .only-mobile{display:inline-flex}
-  .app{grid-template-columns:1fr; grid-template-rows:auto 1fr}
-  aside.side{position:fixed; z-index:50; top:0; left:0; bottom:0; width:min(84vw, 360px); transform:translateX(-105%); transition:transform .28s ease; border-right:1px solid var(--border); box-shadow:0 10px 30px rgba(0,0,0,.4)}
-  aside.side.open{ transform:translateX(0) }
-  model-viewer{ min-height:65vh }
-  .controls{ position:static; width:auto; margin:12px; }
-  .pbar{ left:8px; right:8px; bottom:8px }
-}
-@media (max-width: 420px){ model-viewer{ min-height:70vh } }
-@supports(padding:max(0px)){
-  header{ padding-left:max(12px, env(safe-area-inset-left)); padding-right:max(12px, env(safe-area-inset-right)) }
-}
-.hint{color:var(--muted);font-size:12px}
-.spacer{flex:1 1 auto}
-.overlay{position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(2px); z-index:40}
-.badge{display:inline-block;padding:.2em .5em;border:1px solid var(--border);border-radius:6px;background:#0e141c;color:var(--muted);font-size:12px}
-</style>
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif
+    }
+  </style>
 </head>
+
 <body>
-  <div class="app">
-    <header>
+  <div id="app" class="pm-app">
+    <!-- Üst bar -->
+    <header class="pm-top">
       <button id="menuBtn" class="btn only-mobile" aria-label="Menüyü aç/kapat">☰</button>
       <h1>PanelModels</h1>
       <small class="hint">Galeri • Malzeme paleti • Sahne & Kamera</small>
@@ -126,337 +42,172 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
       <button id="fsBtn" class="btn only-mobile" aria-label="Tam ekran">⤢</button>
     </header>
 
-    <aside id="side" class="side">
-      <div id="gallery" class="grid"></div>
+    <!-- Sol model kataloğu -->
+    <aside id="sidebar" class="pm-left">
+      <div class="pm-section-title">Modeller</div>
+      <div class="pm-card-grid">
+        <div class="pm-card is-active" data-model="vega">
+          <img class="pm-thumb" src="thumbs/vega.png" alt="">
+          <div>
+            <div class="pm-card-title">Vega Panel</div>
+            <div class="pm-card-sub">Ahşap profil</div>
+          </div>
+          <span class="pm-chip">GLB</span>
+        </div>
+        <!-- diğer modeller -->
+      </div>
     </aside>
-    <div id="overlay" class="overlay" hidden></div>
-    <main class="viewer" id="viewerHost">
-      <model-viewer id="mv"
-        camera-controls touch-action="pan-y"
-        shadow-intensity="0.7" exposure="1" environment-rotation="0deg"
-        field-of-view="45deg" min-field-of-view="20deg" max-field-of-view="85deg"
-        min-camera-orbit="auto auto 60%" max-camera-orbit="auto auto 260%"
-        reveal="auto" alt="3B model görüntüleyici">
-      </model-viewer>
 
-      <!-- Sağ panel -->
-      <div class="controls">
-        <!-- Sahne -->
-        <div id="sceneCard" class="card2">
-          <h3>Sahne</h3>
-          <div class="presetbar">
-            <button class="btn" data-preset="studio">Studio</button>
-            <button class="btn" data-preset="day">Daylight</button>
-            <button class="btn" data-preset="show">Showroom</button>
-          </div>
-          <div class="row"><label>Parlaklık</label><input id="exp" type="range" min="0.3" max="2.0" step="0.05" value="1.0"></div>
-          <div class="row" style="margin-top:6px"><label>Gölge</label><input id="shadow" type="range" min="0" max="1" step="0.02" value="0.7"></div>
-          <div class="row" style="margin-top:6px"><label>Güneş Açısı</label><input id="envrot" type="range" min="0" max="360" step="1" value="0"></div>
-          <div class="row" style="margin-top:8px"><label>Arkaplan</label>
-            <div style="display:flex;align-items:center;gap:10px">
-              <input id="bgHue" type="range" min="0" max="360" step="1" value="180" title="Ton">
-              <input id="bgSat" type="range" min="0" max="35" step="1" value="25" title="Doygunluk">
-              <input id="bgVal" type="range" min="25" max="75" step="1" value="55" title="Parlaklık">
-              <div id="bgPrev" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border)"></div>
-              <button id="bgReset" class="btn">Reset</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Kamera -->
-        <div class="card2 cam">
-          <h3>Kamera</h3>
-          <div class="iconbar">
-            <button class="iconbtn" data-orbit="0deg 0deg auto" title="Üstten">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3.5" y="3.5" width="17" height="17" rx="2" stroke-width="1.8"/><rect x="7" y="7" width="10" height="4" rx="1" fill="currentColor"/></svg>
-            </button>
-            <button class="iconbtn" data-orbit="0deg 180deg auto" title="Alttan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3.5" y="3.5" width="17" height="17" rx="2" stroke-width="1.8"/><rect x="7" y="13" width="10" height="4" rx="1" fill="currentColor"/></svg>
-            </button>
-            <button class="iconbtn" data-orbit="0deg 75deg auto" title="Önden">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4.5" y="4.5" width="15" height="15" rx="2" stroke-width="1.8"/><rect x="8" y="8" width="8" height="8" rx="1" fill="currentColor"/></svg>
-            </button>
-            <button class="iconbtn" data-orbit="180deg 75deg auto" title="Arkadan">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4.5" y="4.5" width="15" height="15" rx="2" stroke-width="1.8"/><path d="M8 8h8v8H8z" stroke-width="1.8"/></svg>
-            </button>
-            <button class="iconbtn" data-orbit="45deg 60deg auto" title="Ön sağ 45° yukarı">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="6" width="14" height="12" rx="2" transform="skewX(-10)" stroke-width="1.6"/><line x1="12" y1="4" x2="18" y2="8" stroke-width="1.6"/></svg>
-            </button>
-          </div>
-          <div class="camextras">
-            <div class="row"><label>FOV</label><input id="fov" type="range" min="20" max="80" step="1" value="45"></div>
-            <div class="zoomrow">
-              <button id="zoomOut" class="zoom">Zoom −</button>
-              <button id="zoomIn"  class="zoom">Zoom +</button>
-            </div>
-          </div>
-        </div>
+    <!-- Viewer ana sahne -->
+    <main id="stage" class="pm-main">
+      <div id="viewerHost" class="pm-canvas"></div>
+      <div class="pm-overlay">
+        <button class="btn" id="btnReset">Reset</button>
+        <button class="btn" id="btnShare">Paylaş</button>
       </div>
 
-      <!-- Alt tek sıra palet (ortada hizalı) -->
-      <div class="pbar">
-        <div class="swscroll">
-          <div id="xscroll" class="xscroll">
-            <div id="swwrap" class="swwrap"></div>
-          </div>
-        </div>
-      </div>
+      <!-- Sağ panel kamera butonları -->
+      <nav id="cameras" class="pm-right">
+        <div class="pm-tool" data-cam="front"><span>Ön</span></div>
+        <div class="pm-tool" data-cam="iso"><span>İzo</span></div>
+        <div class="pm-tool" data-cam="zoom"><span>Zoom</span></div>
+      </nav>
+
+      <!-- Alt renk paleti -->
+      <footer id="palette" class="pm-palette">
+        <div class="pm-swatch is-active" data-mat="120-teak"></div>
+        <div class="pm-swatch" data-mat="108-gold"></div>
+        <!-- diğer renkler -->
+      </footer>
     </main>
   </div>
 
-<script type="module">
-/* ================== AYARLAR ================== */
-const CATALOG_URL = 'catalog.json';
-const FILES_URL   = 'files.json';
-const PALETTE_URL = 'palette.json';
-const mv = document.querySelector('model-viewer');
+  <!-- UI Enhancer -->
+  <script src="js/ui-enhance.js"></script>
 
-let catalog = [], files = [], palette = [];
-let currentIdx = 0;              // galeri seçimi
-window.catalog = catalog;        // applySwatch içinden erişim için
-window.currentIdx = currentIdx;
+  <script>
+    // Event hook örnekleri (kendi fonksiyonlarınla değiştir)
+    window.addEventListener('pm:loadModel', e => loadModelById(e.detail.id));
+    window.addEventListener('pm:applyMaterial', e => applyMaterial(e.detail.id));
+    window.addEventListener('pm:setCamera', e => setCameraPreset(e.detail.preset));
+    window.addEventListener('pm:reset', () => resetViewer());
+    window.addEventListener('pm:share', () => shareCurrentView());
+  </script>
+  <script>
+    const mv = document.querySelector('model-viewer');
+    let catalog = [];
+    let palette = [];
+    let currentModel = null;
 
-/* =============== YARDIMCI FONKSİYONLAR =============== */
-// sRGB hex -> lineer RGBA
-function hexToLinearRGBA(hex) {
-  const n = String(hex || '#ffffff').replace('#','');
-  const r = parseInt(n.slice(0,2),16) / 255;
-  const g = parseInt(n.slice(2,4),16) / 255;
-  const b = parseInt(n.slice(4,6),16) / 255;
-  const f = c => (c <= 0.04045) ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
-  return [f(r), f(g), f(b), 1];
-}
+    // --- JSON yükle ---
+    async function loadData() {
+      catalog = await fetch('catalog.json').then(r => r.json());
+      palette = await fetch('palette.json').then(r => r.json());
+    }
 
-// hedef materyaller (varsayılan 'mdf-panel')
-function pickTargetMaterials(model, targets = ['mdf-panel']) {
-  const norm = s => (s||'').toLowerCase();
-  const want = targets.map(norm);
-  const all  = model.materials || [];
-  let hits   = all.filter(m => want.includes(norm(m.name)));
-  if (hits.length) return hits;
-  hits = all.filter(m => want.some(w => norm(m.name).includes(w)));
-  return hits.length ? hits : all.filter(m => !/panelic|iç/i.test(m.name));
-}
+    // --- Model yükleme ---
+    async function loadModelById(id) {
+      if (!catalog.length) await loadData();
+      const item = catalog.find(c => c.src.includes(id));
+      if (!item) return console.warn("Model bulunamadı:", id);
 
-// renk/texture uygula (API uyumlu)
-async function applySwatch(swatch) {
-  await mv?.updateComplete;
+      currentModel = item;
+      mv.src = item.src;
+      await mv?.updateComplete;
 
-  const model   = mv.model;
-  const targets = (window.catalog?.[window.currentIdx]?.targetMaterials) || ['mdf-panel'];
-  const mats    = pickTargetMaterials(model, targets);
-  if (!mats.length) {
-    console.warn('Uygulanacak materyal bulunamadı. Mevcutlar:', model.materials.map(m=>m.name));
-    return;
-  }
-
-  const hex = swatch.color || swatch['#'] || '#ffffff';
-  const wantsTexture = !!swatch.texture;
-
-  // --- ABSOLUTE URL (kritik) ---
-  const texUrl = wantsTexture ? new URL(swatch.texture, document.baseURI).toString() : null;
-
-  // --- Doku oluştur (hangi API varsa onu kullan) ---
-  let tex = null;
-  if (wantsTexture) {
-    try {
-      if (model && typeof model.createTexture === 'function') {
-        tex = await model.createTexture(texUrl); // bazı sürümlerde yok
-      } else if (typeof mv.createTexture === 'function') {
-        tex = await mv.createTexture(texUrl, { usage: 'baseColorTexture' });
-      } else {
-        console.warn('createTexture API’si yok; sadece renk uygulanacak.');
+      // default kamera vs.
+      if (item.defaults?.cameraPreset) {
+        setCameraPreset(item.defaults.cameraPreset);
       }
-    } catch (e) {
-      console.warn('Texture oluşturulamadı:', e);
+      if (item.defaults?.rotationY != null) {
+        mv.turntableRotation = item.defaults.rotationY;
+      }
     }
-  }
-  console.log('applySwatch → url:', texUrl, 'texture obj:', !!tex);
 
-  // --- Setter uyumluluk katmanı ---
-  const setTex = (pbr, t) => {
-    if (typeof pbr.setBaseColorTexture === 'function') {
-      pbr.setBaseColorTexture(t);                        // eski
-    } else if (pbr.baseColorTexture?.setTexture) {
-      pbr.baseColorTexture.setTexture(t);                // yeni
-    } else {
-      pbr.baseColorTexture = t ?? null;                  // fallback
+    // --- Materyal uygula ---
+    async function applyMaterial(matId) {
+      if (!palette.length) await loadData();
+      const sw = palette.find(p => p.id === matId);
+      if (!sw) return console.warn("Palette yok:", matId);
+
+      await mv?.updateComplete;
+      const model = mv.model;
+      if (!model) return;
+
+      // hedef materyalleri bul
+      const targets = currentModel?.targetMaterials || ['mdf-panel'];
+      const mats = model.materials.filter(m =>
+        targets.includes(m.name.toLowerCase()) ||
+        targets.some(t => m.name.toLowerCase().includes(t))
+      );
+      if (!mats.length) return console.warn("Materyal yok:", model.materials.map(m => m.name));
+
+      // texture varsa uygula
+      let tex = null;
+      if (sw.texture) {
+        try {
+          tex = await model.createTexture(sw.texture);
+        } catch (e) {
+          console.warn("Texture yüklenemedi:", e);
+        }
+      }
+
+      for (const mat of mats) {
+        const pbr = mat.pbrMetallicRoughness;
+        if (!pbr) continue;
+
+        if (tex) {
+          if (typeof pbr.setBaseColorTexture === 'function') {
+            pbr.setBaseColorTexture(tex);
+          } else if (pbr.baseColorTexture?.setTexture) {
+            pbr.baseColorTexture.setTexture(tex);
+          }
+          if (typeof pbr.setBaseColorFactor === 'function') {
+            pbr.setBaseColorFactor([1, 1, 1, 1]);
+          }
+        } else if (sw.color) {
+          if (typeof pbr.setBaseColorFactor === 'function') {
+            const hex = sw.color.replace('#', '');
+            const r = parseInt(hex.slice(0, 2), 16) / 255;
+            const g = parseInt(hex.slice(2, 4), 16) / 255;
+            const b = parseInt(hex.slice(4, 6), 16) / 255;
+            pbr.setBaseColorFactor([r, g, b, 1]);
+          }
+        }
+      }
     }
-  };
-  const setColor = (pbr, rgba) => {
-    if (typeof pbr.setBaseColorFactor === 'function') {
-      pbr.setBaseColorFactor(rgba);                      // eski
-    } else {
-      pbr.baseColorFactor = rgba;                        // yeni
+
+    // --- Kamera preset ---
+    function setCameraPreset(preset) {
+      const map = {
+        front: '0deg 90deg auto',
+        back: '180deg 90deg auto',
+        left: '-90deg 90deg auto',
+        right: '90deg 90deg auto',
+        iso45: '30deg 80deg auto',
+        zoom: '0deg 75deg 2m'
+      };
+      if (map[preset]) mv.cameraOrbit = map[preset];
     }
-  };
 
-  // --- Uygula ---
-  for (const mat of mats) {
-    const pbr = mat.pbrMetallicRoughness;
-    if (!pbr) continue;
-
-    if (tex) {
-      setTex(pbr, tex);
-      setColor(pbr, [1,1,1,1]);  // doku rengi bozulmasın
-    } else {
-      setTex(pbr, null);         // varsa dokuyu kaldır
-      setColor(pbr, hexToLinearRGBA(hex));
+    // --- Reset ---
+    function resetViewer() {
+      if (currentModel?.defaults?.cameraPreset) {
+        setCameraPreset(currentModel.defaults.cameraPreset);
+      } else {
+        mv.cameraOrbit = '0deg 75deg auto';
+      }
+      mv.fieldOfView = '45deg';
     }
-  }
-}
 
-
-
-/* ================== MODEL YÜKLEME ================== */
-async function loadModel(idx){
-  currentIdx = (idx+catalog.length)%catalog.length;
-  window.currentIdx = currentIdx;               // applySwatch erişsin
-  const item = catalog[currentIdx];
-  mv.src = item.src;
-  await mv?.updateComplete;
-
-  // Opsiyonel default ayarlar
-  const d = item.defaults || {};
-  if (d.scale != null)      mv.scale = d.scale;
-  if (d.position)           mv.cameraTarget = `${d.position[0]}m ${d.position[1]}m ${d.position[2]}m`;
-  if (d.rotationY != null)  mv.turntableRotation = d.rotationY;
-  if (d.cameraPreset)       applyCameraPreset(d.cameraPreset);
-}
-
-function applyCameraPreset(name){
-  const map = {
-    front:  {orbit:'0deg 90deg auto'},
-    back:   {orbit:'180deg 90deg auto'},
-    left:   {orbit:'-90deg 90deg auto'},
-    right:  {orbit:'90deg 90deg auto'},
-    iso45:  {orbit:'30deg 80deg auto'}
-  };
-  const p = map[name||'iso45'];
-  if (p) mv.cameraOrbit = p.orbit;
-}
-
-/* ================== BAŞLAT ================== */
-(async ()=>{
-  const bust = `?v=${Date.now()}`;   // cache-busting
-  [catalog, files, palette] = await Promise.all([
-    fetch(CATALOG_URL + bust).then(r=>r.json()),
-    fetch(FILES_URL   + bust).then(r=>r.json()),
-    fetch(PALETTE_URL + bust).then(r=>r.json()).catch(()=>[])
-  ]);
-  window.catalog = catalog;
-
-  // GALERİ
-  const gallery = document.getElementById('gallery');
-  if (gallery) {
-    gallery.innerHTML = '';
-    catalog.forEach((it, i)=>{
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <img loading="lazy" src="${it.thumb || 'thumbs/default.png'}" alt="">
-        <div class="meta">${it.name}</div>`;
-      card.onclick = ()=>loadModel(i);
-      gallery.appendChild(card);
-    });
-  }
-
-  // PALET (fetch'ten sonra, doğru ID = swwrap)
-  const row = document.getElementById('swwrap');
-  if (row && palette.length) {
-    row.innerHTML = '';
-    palette.forEach(sw => {
-      const wrap = document.createElement('div');
-      wrap.className = 'swmini';
-
-      const tile = document.createElement('div');
-      tile.className = 'swatch';
-      if (sw.texture) tile.style.backgroundImage = `url(${sw.texture})`;
-      const hex = sw.color || sw["#"];      // palette.json'daki "#" desteği
-      if (hex) tile.style.background = hex;
-
-      tile.title = sw.name || '';
-      tile.onclick = () => applySwatch(sw);
-
-      const label = document.createElement('div');
-      label.className = 'slabel';
-      label.textContent = sw.name || '';
-
-      wrap.appendChild(tile);
-      wrap.appendChild(label);
-      row.appendChild(wrap);
-    });
-  }
-
-  // UI EVENT BINDING
-  document.querySelectorAll('.presetbar .btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const p = btn.dataset.preset;
-      if (p === 'studio') { mv.exposure = 1.0; mv.shadowIntensity = 0.7; setEnvRot(0); }
-      if (p === 'day')    { mv.exposure = 1.2; mv.shadowIntensity = 0.5; setEnvRot(45); }
-      if (p === 'show')   { mv.exposure = 0.9; mv.shadowIntensity = 0.9; setEnvRot(15); }
-      exp.value    = mv.exposure;
-      shadow.value = mv.shadowIntensity;
-      envrot.value = getDeg(mv.getAttribute('environment-rotation'));
-    });
-  });
-
-  const exp    = document.getElementById('exp');
-  const shadow = document.getElementById('shadow');
-  const envrot = document.getElementById('envrot');
-
-  exp?.addEventListener('input',   e => mv.exposure        = parseFloat(e.target.value));
-  shadow?.addEventListener('input',e => mv.shadowIntensity = parseFloat(e.target.value));
-
-  const setEnvRot = (deg) => mv.setAttribute('environment-rotation', `${Math.round(deg)}deg`);
-  const getDeg = (s) => Number(String(s||'0deg').replace('deg','')) || 0;
-  envrot?.addEventListener('input', e => setEnvRot(e.target.value));
-
-  // Arkaplan HSV
-  const bgHue = document.getElementById('bgHue');
-  const bgSat = document.getElementById('bgSat');
-  const bgVal = document.getElementById('bgVal');
-  const bgPrev= document.getElementById('bgPrev');
-  const host  = document.getElementById('viewerHost');
-
-  function hsv2hex(h,s,v){
-    s/=100; v/=100;
-    const f=(n,k=(n+h/60)%6)=> v - v*s*Math.max(0, Math.min(k,4-k,1));
-    const toHex=x=>('0'+Math.round(x*255).toString(16)).slice(-2);
-    const r=f(5), g=f(3), b=f(1);
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-  }
-  function updateBG(){
-    const hex = hsv2hex(Number(bgHue.value), Number(bgSat.value), Number(bgVal.value));
-    host.style.background = hex;
-    bgPrev.style.background = hex;
-  }
-  [bgHue,bgSat,bgVal].forEach(el => el?.addEventListener('input', updateBG));
-  document.getElementById('bgReset')?.addEventListener('click', ()=>{
-    bgHue.value = 180; bgSat.value = 25; bgVal.value = 55; updateBG();
-  });
-  updateBG();
-
-  // Kamera ikonları
-  document.querySelectorAll('.iconbtn[data-orbit]').forEach(btn=>{
-    btn.addEventListener('click', ()=> { mv.cameraOrbit = btn.dataset.orbit; });
-  });
-
-  // FOV + Zoom
-  document.getElementById('fov')?.addEventListener('input', e=>{
-    mv.fieldOfView = `${e.target.value}deg`;
-  });
-  document.getElementById('zoomIn') ?.addEventListener('click', ()=> mv.zoom( 0.15));
-  document.getElementById('zoomOut')?.addEventListener('click', ()=> mv.zoom(-0.15));
-
-  // Başlangıç modeli
-  const prm = new URLSearchParams(location.search);
-  const pModel = prm.get('model');
-  const found = catalog.findIndex(c => c.src === pModel);
-  await loadModel(found >= 0 ? found : 0);
-})();
-</script>
-
+    // --- Share ---
+    function shareCurrentView() {
+      const url = new URL(location.href);
+      if (currentModel) url.searchParams.set('model', currentModel.src);
+      alert("Paylaşım linki:\n" + url.toString());
+    }
+  </script>
 
 </body>
+
 </html>
