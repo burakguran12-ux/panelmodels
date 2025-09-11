@@ -246,21 +246,24 @@ async function applySwatch(swatch) {
   const targets = (window.catalog?.[window.currentIdx]?.targetMaterials) || ['mdf-panel'];
   const mats    = pickTargetMaterials(model, targets);
   if (!mats.length) {
-    console.warn('Uygulanacak materyal bulunamadı. Var olanlar:', model.materials.map(m=>m.name));
+    console.warn('Uygulanacak materyal bulunamadı. Mevcutlar:', model.materials.map(m=>m.name));
     return;
   }
 
   const hex = swatch.color || swatch['#'] || '#ffffff';
   const wantsTexture = !!swatch.texture;
 
+  // --- ABSOLUTE URL (kritik) ---
+  const texUrl = wantsTexture ? new URL(swatch.texture, document.baseURI).toString() : null;
+
   // --- Doku oluştur (hangi API varsa onu kullan) ---
   let tex = null;
   if (wantsTexture) {
     try {
       if (model && typeof model.createTexture === 'function') {
-        tex = await model.createTexture(swatch.texture);                       // yeni API
+        tex = await model.createTexture(texUrl); // bazı sürümlerde yok
       } else if (typeof mv.createTexture === 'function') {
-        tex = await mv.createTexture(swatch.texture, { usage: 'baseColorTexture' }); // eski API
+        tex = await mv.createTexture(texUrl, { usage: 'baseColorTexture' });
       } else {
         console.warn('createTexture API’si yok; sadece renk uygulanacak.');
       }
@@ -268,6 +271,7 @@ async function applySwatch(swatch) {
       console.warn('Texture oluşturulamadı:', e);
     }
   }
+  console.log('applySwatch → url:', texUrl, 'texture obj:', !!tex);
 
   // --- Setter uyumluluk katmanı ---
   const setTex = (pbr, t) => {
@@ -293,7 +297,7 @@ async function applySwatch(swatch) {
     if (!pbr) continue;
 
     if (tex) {
-      setTex(pbr, tex);          // dokuyu tak
+      setTex(pbr, tex);
       setColor(pbr, [1,1,1,1]);  // doku rengi bozulmasın
     } else {
       setTex(pbr, null);         // varsa dokuyu kaldır
@@ -301,6 +305,7 @@ async function applySwatch(swatch) {
     }
   }
 }
+
 
 
 /* ================== MODEL YÜKLEME ================== */
