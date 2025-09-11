@@ -1,4 +1,4 @@
-
+name: Generate catalogs
 
 on:
   push:
@@ -27,8 +27,8 @@ jobs:
         with:
           node-version: 20
 
-      # Eğer generate-files.js NPM paketi kullanıyorsa bu adımı aç:
-      # - name: Install deps
+      # Eğer ileride ekstra paket eklersen (örn: glob, sharp) bu satırı aç:
+      # - name: Install dependencies
       #   run: npm ci
 
       - name: Generate JSON catalogs
@@ -38,7 +38,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # HANGİSİNİ ÜRETTİYORSA ONA GÖRE LISTEYI DÜZENLE
           git add catalog.json files.json thumbs.json models.json || true
           git diff --cached --quiet || git commit -m "CI: regenerate catalogs"
           git push

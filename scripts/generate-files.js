@@ -1,97 +1,96 @@
-// scripts/generate-files.js
-// Node 18/20 uyumlu (CommonJS, ESM gerektirmez)
-
-const fs = require("fs").promises;
-const path = require("path");
+#!/usr/bin/env node
+import fs from "fs/promises";
+import path from "path";
 
 const ROOT = process.cwd();
 const MODELS_DIR = path.join(ROOT, "models");
 const THUMBS_DIR = path.join(ROOT, "thumbs");
 
-// Yardımcılar
-const toPosix = (p) => p.split(path.sep).join("/"); // windows \ -> /
-const basenameNoExt = (p) => path.basename(p, path.extname(p));
-const sortLocale = (a, b) => a.localeCompare(b, "en", { numeric: true, sensitivity: "base" });
+// === Yardımcı Fonksiyonlar ===
 
-async function walk(dir, filterFn) {
+// Dosya uzantısı olmadan isim döndür
+function basenameNoExt(p) {
+  return path.basename(p, path.extname(p));
+}
+
+// Title Case'e çevir (örn: "vega" -> "Vega", "diamond_panel" -> "Diamond Panel")
+function toTitleCase(str) {
+  return str
+    .toLowerCase()
+    .replace(/(^|\s|_|-)\S/g, s => s.toUpperCase());
+}
+
+// Klasörü dolaş
+async function walk(dir) {
+  const files = await fs.readdir(dir, { withFileTypes: true });
   const out = [];
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-  for (const e of entries) {
-    const full = path.join(dir, e.name);
-    if (e.isDirectory()) {
-      out.push(...(await walk(full, filterFn)));
-    } else if (e.isFile()) {
-      if (!filterFn || filterFn(full)) out.push(full);
+  for (const f of files) {
+    const full = path.join(dir, f.name);
+    if (f.isDirectory()) {
+      out.push(...(await walk(full)));
+    } else {
+      out.push(full);
     }
   }
   return out;
 }
 
-async function ensureExists(p) {
-  try { await fs.access(p); }
-  catch {
-    throw new Error(`Gerekli klasör bulunamadı: ${toPosix(path.relative(ROOT, p))}`);
-  }
-}
-
 async function main() {
-  console.log("▶️  generate-files.js başlıyor…");
+  console.log("🚀 JSON katalogları oluşturuluyor...");
 
-  await ensureExists(MODELS_DIR);
-  await ensureExists(THUMBS_DIR);
-
-  // 1) Modelleri tara (.glb)
-  const glbs = (await walk(MODELS_DIR, (f) => path.extname(f).toLowerCase() === ".glb"))
-    .map((abs) => toPosix(path.relative(ROOT, abs)))
-    .sort(sortLocale);
-
-  // 2) Thumbnail’ları tara (.png/.webp)
-  const thumbs = (await walk(THUMBS_DIR, (f) => [".png", ".webp"].includes(path.extname(f).toLowerCase())))
-    .map((abs) => toPosix(path.relative(ROOT, abs)))
-    .sort(sortLocale);
-
-  // 3) Eşleştirme: aynı basename’e sahip olanları bağla
-  const thumbMap = new Map(
-    thumbs.map((p) => [basenameNoExt(p).toLowerCase(), p])
+  const modelFiles = (await walk(MODELS_DIR)).filter(f => f.endsWith(".glb"));
+  const thumbFiles = (await walk(THUMBS_DIR)).filter(f =>
+    [".png", ".jpg", ".jpeg", ".webp"].some(ext => f.toLowerCase().endsWith(ext))
   );
 
-  const models = glbs.map((p) => {
+  // === Thumb eşlemesi ===
+  const thumbMap = new Map();
+  for (const t of thumbFiles) {
+    const id = basenameNoExt(t).toLowerCase();
+    thumbMap.set(id, path.relative(ROOT, t).replace(/\\/g, "/"));
+  }
+
+  // === Models.json için veri ===
+  const models = modelFiles.map((p) => {
     const id = basenameNoExt(p);
     const key = id.toLowerCase();
     const thumb = thumbMap.get(key) || null;
     return {
-      id,                     // "antares" gibi
-      name: id,               // UI’da göstermek istersen
-      path: p,                // "models/antares.glb"
-      thumb,                  // "thumbs/antares.png" | null
+      id,
+      name: toTitleCase(id),   // Vega, Antares, Diamond gibi
+      path: path.relative(ROOT, p).replace(/\\/g, "/"),
+      thumb,
       ext: ".glb",
     };
   });
 
-  // 4) Çıktıları yaz
+  // === Catalog.json için veri ===
+  const catalog = models.map(m => ({
+    name: `${m.name} Panel`,
+    src: m.path,
+    thumb: m.thumb || "thumbs/default.png",
+    targetMaterials: ["mdf-panel"],
+    defaults: { cameraPreset: "iso45", rotationY: 0 }
+  }));
+
+  // === Çıktı dosyaları ===
   const outFiles = [
-    ["files.json", glbs],
-    ["thumbs.json", thumbs],
+    ["files.json", modelFiles.map(p => path.relative(ROOT, p).replace(/\\/g, "/"))],
+    ["thumbs.json", thumbFiles.map(p => path.relative(ROOT, p).replace(/\\/g, "/"))],
     ["models.json", models],
+    ["catalog.json", catalog],
   ];
 
   for (const [filename, data] of outFiles) {
     const json = JSON.stringify(data, null, 2) + "\n";
     await fs.writeFile(path.join(ROOT, filename), json, "utf8");
-    console.log(`✅ ${filename} yazıldı (${typeof data === "object" ? (Array.isArray(data) ? data.length : Object.keys(data).length) : "?"} kayıt)`);
+    console.log(`✅ ${filename} yazıldı (${Array.isArray(data) ? data.length : Object.keys(data).length} kayıt)`);
   }
 
-  // 5) Basit sağlık uyarıları
-  const missingThumbs = models.filter((m) => !m.thumb).map((m) => m.id);
-  if (missingThumbs.length) {
-    console.warn(`⚠️  Thumbnail bulunamayan modeller: ${missingThumbs.join(", ")}`);
-    console.warn(`    Eşleştirme kuralları: "models/foo.glb" ↔ "thumbs/foo.png|webp" (aynı basename)`);
-  }
-
-  console.log("🎯 Bitti.");
+  console.log("🎉 Katalog üretimi tamamlandı!");
 }
 
-main().catch((err) => {
-  console.error("❌ Hata:", err.message);
+main().catch(err => {
+  console.error("❌ Hata:", err);
   process.exit(1);
 });
