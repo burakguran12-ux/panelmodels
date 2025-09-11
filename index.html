@@ -262,6 +262,79 @@ function pickTargetMaterials(model, targets=["mdf-panel"]) {
   return allMats.filter(m => !/panelic|ic|iç|mdf/i.test(m.name));
 }
 
+// sRGB hex -> lineer RGBA
+function hexToLinearRGBA(hex) {
+  const n = String(hex || '#ffffff').replace('#','');
+  const r = parseInt(n.slice(0,2),16) / 255;
+  const g = parseInt(n.slice(2,4),16) / 255;
+  const b = parseInt(n.slice(4,6),16) / 255;
+  const f = c => (c <= 0.04045) ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+  return [f(r), f(g), f(b), 1];
+}
+
+// hedef materyaller (default: mdf-panel)
+function pickTargetMaterials(model, targets = ['mdf-panel']) {
+  const norm = s => (s||'').toLowerCase();
+  const want = targets.map(norm);
+  const all  = model.materials || [];
+  let hits   = all.filter(m => want.includes(norm(m.name)));
+  if (hits.length) return hits;
+  hits = all.filter(m => want.some(w => norm(m.name).includes(w)));
+  return hits.length ? hits : all.filter(m => !/panelic|iç/i.test(m.name));
+}
+
+async function applySwatch(swatch) {
+  const mv = document.querySelector('model-viewer');
+  await mv?.updateComplete;
+
+  const model   = mv.model;
+  const targets = (window.catalog?.[window.currentIdx]?.targetMaterials) || ['mdf-panel'];
+  const mats    = pickTargetMaterials(model, targets);
+  if (!mats.length) {
+    console.warn('Uygulanacak materyal bulunamadı. Var olanlar:', model.materials.map(m=>m.name));
+    return;
+  }
+
+  const isTexture = !!swatch.texture;
+  const hex = swatch.color || swatch['#'] || '#ffffff';
+
+  // Texture gerekiyorsa bir kez oluştur (model üzerinden!)
+  let tex = null;
+  if (isTexture) {
+    tex = await model.createTexture(swatch.texture);
+  }
+
+  // API uyumluluk katmanı (eski/yeni sürümler)
+  const setTex = (pbr, t) => {
+    if (typeof pbr.setBaseColorTexture === 'function') {
+      pbr.setBaseColorTexture(t);                   // eski API
+    } else if (pbr.baseColorTexture?.setTexture) {
+      pbr.baseColorTexture.setTexture(t);           // yeni API
+    } else {
+      pbr.baseColorTexture = t ?? null;             // en basit atama
+    }
+  };
+  const setColor = (pbr, rgba) => {
+    if (typeof pbr.setBaseColorFactor === 'function') {
+      pbr.setBaseColorFactor(rgba);                 // eski API
+    } else {
+      pbr.baseColorFactor = rgba;                   // yeni API
+    }
+  };
+
+  for (const mat of mats) {
+    const pbr = mat.pbrMetallicRoughness;
+    if (!pbr) continue;
+
+    if (isTexture) {
+      setTex(pbr, tex);             // dokuyu tak
+      setColor(pbr, [1,1,1,1]);     // doku rengi bozulmasın
+    } else {
+      setTex(pbr, null);            // varsa dokuyu kaldır
+      setColor(pbr, hexToLinearRGBA(hex));
+    }
+  }
+}
 
 
 // sRGB hex -> Linear RGBA
@@ -299,7 +372,6 @@ function applyCameraPreset(name){
   const p = map[name||'iso45'];
   if (p) mv.cameraOrbit = p.orbit;
 }
-
 
 // Klavye kısayolları
 window.addEventListener('keydown', (e)=>{
