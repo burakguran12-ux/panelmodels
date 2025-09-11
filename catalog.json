@@ -3,5 +3,6 @@
   { "name": "Rigel Panel",   "src": "models/rigel.glb",   "thumb": "thumbs/rigel.png",   "targetMaterials": ["mdf-panel"] },
   { "name": "Atlas Panel",   "src": "models/atlas.glb",   "thumb": "thumbs/atlas.png",   "targetMaterials": ["mdf-panel"] },
   { "name": "Diamond Panel", "src": "models/diamond.glb", "thumb": "thumbs/diamond.png", "targetMaterials": ["mdf-panel"] },
-  { "name": "Antares Panel", "src": "models/antares.glb", "thumb": "thumbs/antares.png", "targetMaterials": ["mdf-panel"] }
+  { "name": "Antares Panel", "src": "models/antares.glb", "thumb": "thumbs/antares.png", "targetMaterials": ["mdf-panel"] },
+  { "name": "Capella Panel", "src": "models/capella.glb", "thumb": "thumbs/capella.png", "targetMaterials": ["mdf-panel"] }
 ]
