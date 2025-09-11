@@ -1,19 +1,19 @@
 [
   {
     "name": "108 GOLD CEVİZ",
-    "texture": "./materials/108-gold-ceviz.jpg"
+    "texture": "materials/108-gold-ceviz.jpg"
   },
   {
     "name": "120 TEAK LEGNO",
-    "texture": "./materials/120-teak-legno.jpg"
+    "texture": "materials/120-teak-legno.jpg"
   },
   {
     "name": "126 LAKE BEYAZ",
-    "texture": "./materials/126-lake-beyaz.jpg"
+    "texture": "materials/126-lake-beyaz.jpg"
   },
   {
     "name": "128 BUTE BEYAZ",
-    "texture": "./materials/128-bute-beyaz.jpg"
+    "texture": "materials/128-bute-beyaz.jpg"
   },
   {
     "name": "138 SATEN ANTREASİT",
@@ -53,15 +53,15 @@
   },
   {
     "name": "175 GRİ MEŞE LEGNO",
-    "texture": "./materials/175-gri-mese-legno.jpg"
+    "texture": "materials/175-gri-mese-legno.jpg"
   },
   {
     "name": "176 ANADOLU CEVİZ LEGNO",
-    "texture": "./materials/176-anadolu-ceviz-legno.jpg"
+    "texture": "materials/176-anadolu-ceviz-legno.jpg"
   },
   {
     "name": "179 İTALYAN CEVİZ 2 LEGNO",
-    "texture": "./materials/179-italyan-ceviz-2-legno.jpg"
+    "texture": "materials/179-italyan-ceviz-2-legno.jpg"
   },
   {
     "name": "200 SOFT TOUCH FIRTINA GRİ",
