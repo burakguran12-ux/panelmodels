@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-import fs from "fs/promises";
-import path from "path";
+
+const fs = require("fs/promises");
+const path = require("path");
+
 
 const ROOT = process.cwd();
 const MODELS_DIR = path.join(ROOT, "models");
