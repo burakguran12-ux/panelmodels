@@ -262,6 +262,43 @@ function pickTargetMaterials(model, targets=["mdf-panel"]) {
   return allMats.filter(m => !/panelic|ic|iç|mdf/i.test(m.name));
 }
 
+
+
+// sRGB hex -> Linear RGBA
+function hexToLinearRGBA(hex){
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const srgb = m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)].map(v=>v/255) : [1,1,1];
+  const lin  = srgb.map(c => (c<=0.04045)?(c/12.92):Math.pow((c+0.055)/1.055,2.4));
+  return [lin[0],lin[1],lin[2],1];
+}
+
+// Katalogtan model yükle + varsayılan poz/scale/rot
+async function loadModel(idx){
+  currentIdx = (idx+catalog.length)%catalog.length;
+  const item = catalog[currentIdx];
+  mv.src = item.src;
+  await mv?.updateComplete;
+
+  // Opsiyonel model-vaka ayarları
+  const d = item.defaults || {};
+  if (d.scale != null)   mv.scale = d.scale;
+  if (d.position)        mv.setAttribute('reveal','auto'), mv.cameraTarget = `${d.position[0]}m ${d.position[1]}m ${d.position[2]}m`;
+  if (d.rotationY != null) mv.turntableRotation = d.rotationY;
+  if (d.cameraPreset)    applyCameraPreset(d.cameraPreset);
+}
+
+// Basit kamera preset’leri
+function applyCameraPreset(name){
+  const map = {
+    front:  {orbit:'0deg 90deg auto'},
+    back:   {orbit:'180deg 90deg auto'},
+    left:   {orbit:'-90deg 90deg auto'},
+    right:  {orbit:'90deg 90deg auto'},
+    iso45:  {orbit:'30deg 80deg auto'}
+  };
+  const p = map[name||'iso45'];
+  if (p) mv.cameraOrbit = p.orbit;
+}
 // sRGB hex -> lineer RGBA (mevcut fonksiyonunla aynı kalabilir)
 function hexToLinearRGBA(hex) {
   const n = hex.replace('#','');
@@ -336,37 +373,6 @@ async function applySwatch(swatch) {
   }
 }
 
-
-
-
-
-// Katalogtan model yükle + varsayılan poz/scale/rot
-async function loadModel(idx){
-  currentIdx = (idx+catalog.length)%catalog.length;
-  const item = catalog[currentIdx];
-  mv.src = item.src;
-  await mv?.updateComplete;
-
-  // Opsiyonel model-vaka ayarları
-  const d = item.defaults || {};
-  if (d.scale != null)   mv.scale = d.scale;
-  if (d.position)        mv.setAttribute('reveal','auto'), mv.cameraTarget = `${d.position[0]}m ${d.position[1]}m ${d.position[2]}m`;
-  if (d.rotationY != null) mv.turntableRotation = d.rotationY;
-  if (d.cameraPreset)    applyCameraPreset(d.cameraPreset);
-}
-
-// Basit kamera preset’leri
-function applyCameraPreset(name){
-  const map = {
-    front:  {orbit:'0deg 90deg auto'},
-    back:   {orbit:'180deg 90deg auto'},
-    left:   {orbit:'-90deg 90deg auto'},
-    right:  {orbit:'90deg 90deg auto'},
-    iso45:  {orbit:'30deg 80deg auto'}
-  };
-  const p = map[name||'iso45'];
-  if (p) mv.cameraOrbit = p.orbit;
-}
 
 // Klavye kısayolları
 window.addEventListener('keydown', (e)=>{
