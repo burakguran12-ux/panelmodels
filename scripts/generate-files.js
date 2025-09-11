@@ -1,8 +1,6 @@
 #!/usr/bin/env node
-
 const fs = require("fs/promises");
 const path = require("path");
-
 
 const ROOT = process.cwd();
 const MODELS_DIR = path.join(ROOT, "models");
@@ -15,7 +13,7 @@ function basenameNoExt(p) {
   return path.basename(p, path.extname(p));
 }
 
-// Title Case'e çevir (örn: "vega" -> "Vega", "diamond_panel" -> "Diamond Panel")
+// Title Case (örn: "vega" -> "Vega", "diamond_panel" -> "Diamond Panel")
 function toTitleCase(str) {
   return str
     .toLowerCase()
@@ -59,7 +57,7 @@ async function main() {
     const thumb = thumbMap.get(key) || null;
     return {
       id,
-      name: toTitleCase(id),   // Vega, Antares, Diamond gibi
+      name: toTitleCase(id),
       path: path.relative(ROOT, p).replace(/\\/g, "/"),
       thumb,
       ext: ".glb",
