@@ -21,31 +21,10 @@
     "ext": ".glb"
   },
   {
-    "id": "atlas",
-    "name": "atlas",
-    "path": "models/eski-glb/atlas.glb",
-    "thumb": "thumbs/atlas.png",
-    "ext": ".glb"
-  },
-  {
     "id": "rigel",
     "name": "rigel",
-    "path": "models/eski-glb/rigel.glb",
+    "path": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
-    "ext": ".glb"
-  },
-  {
-    "id": "rigeld",
-    "name": "rigeld",
-    "path": "models/eski-glb/rigeld.glb",
-    "thumb": null,
-    "ext": ".glb"
-  },
-  {
-    "id": "rigel_converted",
-    "name": "rigel_converted",
-    "path": "models/rigel_converted.glb",
-    "thumb": null,
     "ext": ".glb"
   }
 ]

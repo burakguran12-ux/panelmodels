@@ -2,8 +2,5 @@
   "models/antares.glb",
   "models/atlas.glb",
   "models/diamond.glb",
-  "models/eski-glb/atlas.glb",
-  "models/eski-glb/rigel.glb",
-  "models/eski-glb/rigeld.glb",
-  "models/rigel_converted.glb"
+  "models/rigel.glb"
 ]
