@@ -30,6 +30,13 @@
   {
     "id": "rigel",
     "name": "rigel",
+    "path": "models/eski-glb/rigel.glb",
+    "thumb": "thumbs/rigel.png",
+    "ext": ".glb"
+  },
+  {
+    "id": "rigel",
+    "name": "rigel",
     "path": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
     "ext": ".glb"
