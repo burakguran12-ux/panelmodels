@@ -250,44 +250,58 @@ async function applySwatch(swatch) {
     return;
   }
 
-  const isTexture = !!swatch.texture;
   const hex = swatch.color || swatch['#'] || '#ffffff';
+  const wantsTexture = !!swatch.texture;
 
-  // texture gerekiyorsa model üzerinden bir kez oluştur
+  // --- Doku oluştur (hangi API varsa onu kullan) ---
   let tex = null;
-  if (isTexture) tex = await model.createTexture(swatch.texture);
+  if (wantsTexture) {
+    try {
+      if (model && typeof model.createTexture === 'function') {
+        tex = await model.createTexture(swatch.texture);                       // yeni API
+      } else if (typeof mv.createTexture === 'function') {
+        tex = await mv.createTexture(swatch.texture, { usage: 'baseColorTexture' }); // eski API
+      } else {
+        console.warn('createTexture API’si yok; sadece renk uygulanacak.');
+      }
+    } catch (e) {
+      console.warn('Texture oluşturulamadı:', e);
+    }
+  }
 
-  // Eski/Yeni model-viewer API'leri için uyum katmanı
+  // --- Setter uyumluluk katmanı ---
   const setTex = (pbr, t) => {
     if (typeof pbr.setBaseColorTexture === 'function') {
-      pbr.setBaseColorTexture(t);                    // eski API
+      pbr.setBaseColorTexture(t);                        // eski
     } else if (pbr.baseColorTexture?.setTexture) {
-      pbr.baseColorTexture.setTexture(t);            // yeni API
+      pbr.baseColorTexture.setTexture(t);                // yeni
     } else {
-      pbr.baseColorTexture = t ?? null;              // fallback
+      pbr.baseColorTexture = t ?? null;                  // fallback
     }
   };
   const setColor = (pbr, rgba) => {
     if (typeof pbr.setBaseColorFactor === 'function') {
-      pbr.setBaseColorFactor(rgba);                  // eski API
+      pbr.setBaseColorFactor(rgba);                      // eski
     } else {
-      pbr.baseColorFactor = rgba;                    // yeni API
+      pbr.baseColorFactor = rgba;                        // yeni
     }
   };
 
+  // --- Uygula ---
   for (const mat of mats) {
     const pbr = mat.pbrMetallicRoughness;
     if (!pbr) continue;
 
-    if (isTexture) {
-      setTex(pbr, tex);            // dokuyu tak
-      setColor(pbr, [1,1,1,1]);    // doku rengi bozulmasın
+    if (tex) {
+      setTex(pbr, tex);          // dokuyu tak
+      setColor(pbr, [1,1,1,1]);  // doku rengi bozulmasın
     } else {
-      setTex(pbr, null);           // varsa dokuyu kaldır
+      setTex(pbr, null);         // varsa dokuyu kaldır
       setColor(pbr, hexToLinearRGBA(hex));
     }
   }
 }
+
 
 /* ================== MODEL YÜKLEME ================== */
 async function loadModel(idx){
