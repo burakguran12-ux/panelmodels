@@ -205,7 +205,7 @@ input[type="range"]{width:100%; accent-color:var(--accent)}
     </main>
   </div>
 
-<script type="module">
+  <script type="module">
 import "@google/model-viewer";
 
 const CATALOG_URL = 'catalog.json';        // doğru kök
@@ -317,6 +317,7 @@ window.addEventListener('keydown', (e)=>{
     fetch(PALETTE_URL + bust).then(r=>r.json()).catch(()=>[])
   ]);
 
+  
   // Galeri kartlarını oluştur (thumb yoksa fallback)
   const gallery = document.getElementById('gallery');
   if (gallery) {
