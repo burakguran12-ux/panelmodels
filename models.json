@@ -33,5 +33,12 @@
     "path": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
     "ext": ".glb"
+  },
+  {
+    "id": "vega",
+    "name": "vega",
+    "path": "models/vega.glb",
+    "thumb": "thumbs/vega.png",
+    "ext": ".glb"
   }
 ]
