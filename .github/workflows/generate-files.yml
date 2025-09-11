@@ -1,8 +1,13 @@
-name: Generate catalogs
+
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+    paths:
+      - 'models/**'
+      - 'thumbs/**'
+      - 'scripts/generate-files.js'
+      - '.github/workflows/generate-files.yml'
   workflow_dispatch:
 
 permissions:
@@ -12,10 +17,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # Eğer generate-files.js NPM paketi kullanıyorsa bu adımı aç:
+      # - name: Install deps
+      #   run: npm ci
 
       - name: Generate JSON catalogs
         run: node scripts/generate-files.js
@@ -24,6 +38,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add files.json thumbs.json models.json
+          # HANGİSİNİ ÜRETTİYORSA ONA GÖRE LISTEYI DÜZENLE
+          git add catalog.json files.json thumbs.json models.json || true
           git diff --cached --quiet || git commit -m "CI: regenerate catalogs"
           git push
