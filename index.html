@@ -262,38 +262,83 @@ function pickTargetMaterials(model, targets=["mdf-panel"]) {
   return allMats.filter(m => !/panelic|ic|iç|mdf/i.test(m.name));
 }
 
-// Doku/renk uygula (yalnız hedef materyaller)
-async function applySwatch(swatch) {
-  await mv?.updateComplete;
-  const targets = catalog[currentIdx]?.targetMaterials || ["mdf-panel"];
-  const mats = pickTargetMaterials(mv.model, targets);
-  if (!mats.length) return;
+// sRGB hex -> lineer RGBA (mevcut fonksiyonunla aynı kalabilir)
+function hexToLinearRGBA(hex) {
+  const n = hex.replace('#','');
+  const r = parseInt(n.slice(0,2),16) / 255;
+  const g = parseInt(n.slice(2,4),16) / 255;
+  const b = parseInt(n.slice(4,6),16) / 255;
+  const srgb2lin = c => (c <= 0.04045) ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+  return [srgb2lin(r), srgb2lin(g), srgb2lin(b), 1];
+}
 
-  // 🔧 color alanı yoksa palette.json'daki "#" alanını kullan
-  const hex = swatch.color || swatch["#"] || "#ffffff";
+// Hedef materyalleri seç (mdf-panel varsayılan)
+function pickTargetMaterials(model, targets = ['mdf-panel']) {
+  const norm = s => (s||'').toLowerCase();
+  const wanted = targets.map(norm);
+  const all = model.materials || [];
+  let hits = all.filter(m => wanted.includes(norm(m.name)));
+  if (hits.length) return hits;
+  hits = all.filter(m => wanted.some(w => norm(m.name).includes(w)));
+  return hits.length ? hits : all.filter(m => !/panelic|ic|iç|mdf\s*iç/i.test(m.name));
+}
+
+async function applySwatch(swatch) {
+  const mv = document.querySelector('model-viewer');
+  await mv?.updateComplete;
+
+  const model   = mv.model;
+  const targets = (window.catalog?.[window.currentIdx]?.targetMaterials) || ['mdf-panel'];
+  const mats    = pickTargetMaterials(model, targets);
+  if (!mats.length) {
+    console.warn('Uygulanacak materyal bulunamadı. Var olanlar:', model.materials.map(m=>m.name));
+    return;
+  }
+
   const isTexture = !!swatch.texture;
+  const hex = swatch.color || swatch['#'] || '#ffffff';
+
+  // Texture gerekiyorsa bir kez oluştur (model üzerinden!)
+  let tex = null;
+  if (isTexture) {
+    tex = await model.createTexture(swatch.texture);
+  }
+
+  // Farklı model-viewer sürümleri için uyum katmanı
+  const setBaseColorTexture = (pbr, t) => {
+    if (typeof pbr.setBaseColorTexture === 'function') {
+      pbr.setBaseColorTexture(t);                             // eski API
+    } else if (pbr.baseColorTexture && typeof pbr.baseColorTexture.setTexture === 'function') {
+      pbr.baseColorTexture.setTexture(t);                     // yeni API
+    } else {
+      pbr.baseColorTexture = t ?? null;                       // en basit atama
+    }
+  };
+  const setBaseColorFactor = (pbr, rgba) => {
+    if (typeof pbr.setBaseColorFactor === 'function') {
+      pbr.setBaseColorFactor(rgba);                           // eski API
+    } else {
+      pbr.baseColorFactor = rgba;                             // yeni API
+    }
+  };
 
   for (const mat of mats) {
     const pbr = mat.pbrMetallicRoughness;
+    if (!pbr) continue;
+
     if (isTexture) {
-      const tex = await mv.createTexture(swatch.texture, { usage: "baseColorTexture" });
-      pbr.setBaseColorTexture(tex);
-      pbr.setBaseColorFactor([1,1,1,1]);
+      setBaseColorTexture(pbr, tex);        // dokuyu tak
+      setBaseColorFactor(pbr, [1,1,1,1]);   // doku rengi bozulmasın
     } else {
-      const color = hexToLinearRGBA(hex);
-      pbr.setBaseColorTexture(null);
-      pbr.setBaseColorFactor(color);
+      setBaseColorTexture(pbr, null);       // varsa dokuyu kaldır
+      setBaseColorFactor(pbr, hexToLinearRGBA(hex));
     }
   }
 }
 
-// sRGB hex -> Linear RGBA
-function hexToLinearRGBA(hex){
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  const srgb = m ? [parseInt(m[1],16), parseInt(m[2],16), parseInt(m[3],16)].map(v=>v/255) : [1,1,1];
-  const lin  = srgb.map(c => (c<=0.04045)?(c/12.92):Math.pow((c+0.055)/1.055,2.4));
-  return [lin[0],lin[1],lin[2],1];
-}
+
+
+
 
 // Katalogtan model yükle + varsayılan poz/scale/rot
 async function loadModel(idx){
