@@ -6,3 +6,9 @@
     "gen": "node generate-files.js"
   }
 }
+
+{
+  "scripts": {
+    "generate": "node scripts/generate-files.js"
+  }
+}

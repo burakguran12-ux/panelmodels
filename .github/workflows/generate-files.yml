@@ -1,7 +1,8 @@
-name: Generate files.json
+name: Generate catalogs
+
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,33 +16,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Generate files.json
+
+      - name: Generate JSON catalogs
+        run: node scripts/generate-files.js
+
+      - name: Commit changes (if any)
         run: |
-          node -e "require('fs').writeFileSync('generate-files.js', `// generate-files.js
-import { promises as fs } from 'fs';
-import path from 'path';
-const ROOT = process.cwd();
-async function walk(dir, acc=[]) {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-  for (const e of entries) {
-    const full = path.join(dir, e.name);
-    if (e.isDirectory()) await walk(full, acc);
-    else if (e.isFile() && e.name.toLowerCase().endsWith('.glb')) {
-      const rel = path.relative(ROOT, full).split(path.sep).join('/');
-      acc.push(rel);
-    }
-  }
-  return acc;
-}
-const files = (await walk(ROOT, [])).sort((a,b)=> a.localeCompare(b));
-await fs.writeFile('files.json', JSON.stringify(files, null, 2));
-console.log(\`✓ files.json (${files.length})\`);
-`)"
-          node -e "require('fs').writeFileSync('package.json', `{"name": "panelmodels", "version": "1.0.0", "type": "module", "scripts": {"gen": "node generate-files.js"}}`)"
-          node generate-files.js
-      - name: Commit changes if any
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: 'files.json'
-          message: 'chore: update files.json'
-          default_author: github_actions
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add files.json thumbs.json models.json
+          git diff --cached --quiet || git commit -m "CI: regenerate catalogs"
+          git push
