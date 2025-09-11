@@ -218,6 +218,33 @@ const mv = document.querySelector('model-viewer');
 let catalog = [], files = [], palette = [];
 let currentIdx = 0;
 
+// Palet çubukları (tek sırada, scroll ile kayar)
+const row = document.getElementById('swwrap'); // ❗ swrow değil swwrap
+if (row && palette.length) {
+  row.innerHTML = '';
+  palette.forEach(sw => {
+    const wrap = document.createElement('div');
+    wrap.className = 'swmini';
+
+    const tile = document.createElement('div');
+    tile.className = 'swatch';
+    if (sw.texture) tile.style.backgroundImage = `url(${sw.texture})`;
+    const hex = sw.color || sw["#"];
+    if (hex) tile.style.background = hex;
+
+    tile.title = sw.name || '';
+    tile.onclick = () => applySwatch(sw);
+
+    const label = document.createElement('div');
+    label.className = 'slabel';
+    label.textContent = sw.name || '';
+
+    wrap.appendChild(tile);
+    wrap.appendChild(label);
+    row.appendChild(wrap);
+  });
+}
+
 // Küçük yardımcılar
 const norm = s => (s||'').toLowerCase().replace(/\s+/g,'').normalize('NFKD');
 
@@ -259,35 +286,6 @@ async function applySwatch(swatch) {
     }
   }
 }
-
-// Palet çubukları (tek sırada, scroll ile kayar)
-const row = document.getElementById('swwrap'); // ❗ swrow değil swwrap
-if (row && palette.length) {
-  row.innerHTML = '';
-  palette.forEach(sw => {
-    const wrap = document.createElement('div');
-    wrap.className = 'swmini';
-
-    const tile = document.createElement('div');
-    tile.className = 'swatch';
-    if (sw.texture) tile.style.backgroundImage = `url(${sw.texture})`;
-    const hex = sw.color || sw["#"];
-    if (hex) tile.style.background = hex;
-
-    tile.title = sw.name || '';
-    tile.onclick = () => applySwatch(sw);
-
-    const label = document.createElement('div');
-    label.className = 'slabel';
-    label.textContent = sw.name || '';
-
-    wrap.appendChild(tile);
-    wrap.appendChild(label);
-    row.appendChild(wrap);
-  });
-}
-
-
 
 // sRGB hex -> Linear RGBA
 function hexToLinearRGBA(hex){
