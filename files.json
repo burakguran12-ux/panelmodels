@@ -4,5 +4,6 @@
   "models/diamond.glb",
   "models/eski-glb/atlas.glb",
   "models/eski-glb/rigel.glb",
-  "models/rigel.glb"
+  "models/eski-glb/rigeld.glb",
+  "models/rigel_converted.glb"
 ]
