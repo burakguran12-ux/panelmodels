@@ -1,13 +1,9 @@
+
 {
   "name": "panelmodels",
   "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "gen": "node generate-files.js"
-  }
-}
-
-{
+  "private": true,
+  "type": "commonjs",
   "scripts": {
     "generate": "node scripts/generate-files.js"
   }
