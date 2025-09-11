@@ -10,12 +10,11 @@
   <!-- Model Viewer -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-  <!-- Yeni minimal tasarım -->
+  <!-- Yeni minimal tema -->
   <link rel="stylesheet" href="css/viewer-makeup.css">
 
   <style>
     :root {
-      /* İstersen markana göre güncelle */
       --accent: #68c3ff;
       --hover-accent: #698C8C;
     }
@@ -26,14 +25,14 @@
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif
+      font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
   </style>
 </head>
 
 <body>
   <div id="app" class="pm-app">
-    <!-- Üst bar -->
+    <!-- ÜST BAR -->
     <header class="pm-top">
       <button id="menuBtn" class="btn only-mobile" aria-label="Menüyü aç/kapat">☰</button>
       <h1>PanelModels</h1>
@@ -42,7 +41,7 @@
       <button id="fsBtn" class="btn only-mobile" aria-label="Tam ekran">⤢</button>
     </header>
 
-    <!-- Sol model kataloğu -->
+    <!-- SOL KATALOG -->
     <aside id="sidebar" class="pm-left">
       <div class="pm-section-title">Modeller</div>
       <div class="pm-card-grid">
@@ -58,9 +57,8 @@
       </div>
     </aside>
 
-    <!-- Viewer ana sahne -->
+    <!-- ORTA GÖRÜNTÜLEYİCİ -->
     <main id="stage" class="pm-main">
-
       <div id="viewerHost" class="pm-canvas">
         <model-viewer id="mv" src="" camera-controls touch-action="pan-y" exposure="1.0" shadow-intensity="0.6"
           environment-image="neutral" interaction-prompt="none" poster-color="transparent"
@@ -71,52 +69,45 @@
         <button class="btn" id="btnReset">Reset</button>
         <button class="btn" id="btnShare">Paylaş</button>
       </div>
-
-      <!-- Sağ panel kamera butonları -->
-      <nav id="cameras" class="pm-right">
-        <div class="pm-tool" data-cam="front"><span>Ön</span></div>
-        <div class="pm-tool" data-cam="iso"><span>İzo</span></div>
-        <div class="pm-tool" data-cam="zoom"><span>Zoom</span></div>
-      </nav>
-
-      <!-- Alt renk paleti -->
-      <footer id="palette" class="pm-palette">
-        <div class="pm-swatch is-active" data-mat="120-teak"></div>
-        <div class="pm-swatch" data-mat="108-gold"></div>
-        <!-- diğer renkler -->
-      </footer>
     </main>
+
+    <!-- SAĞ KAMERA DOCK (main dışına alındı) -->
+    <nav id="cameras" class="pm-right">
+      <div class="pm-tool" data-cam="front"><span>Ön</span></div>
+      <div class="pm-tool" data-cam="iso"><span>İzo</span></div>
+      <div class="pm-tool" data-cam="zoom"><span>Zoom</span></div>
+    </nav>
+
+    <!-- ALT RENK PALETİ (main dışına alındı) -->
+    <footer id="palette" class="pm-palette">
+      <div class="pm-swatch is-active" data-mat="120-teak"></div>
+      <div class="pm-swatch" data-mat="108-gold"></div>
+      <!-- diğer renkler -->
+    </footer>
   </div>
 
   <!-- UI Enhancer -->
   <script src="js/ui-enhance.js"></script>
 
-  <script>
-    // Event hook örnekleri (kendi fonksiyonlarınla değiştir)
-    window.addEventListener('pm:loadModel', e => loadModelById(e.detail.id));
-    window.addEventListener('pm:applyMaterial', e => applyMaterial(e.detail.id));
-    window.addEventListener('pm:setCamera', e => setCameraPreset(e.detail.preset));
-    window.addEventListener('pm:reset', () => resetViewer());
-    window.addEventListener('pm:share', () => shareCurrentView());
-  </script>
+  <!-- Event hook & gerçek davranışlar -->
   <script>
     const mv = document.getElementById('mv');
     let catalog = [];
     let palette = [];
     let currentModel = null;
 
-    // --- JSON yükle ---
+    // JSON yükleyiciler
     async function loadData() {
       catalog = await fetch('catalog.json').then(r => r.json());
       palette = await fetch('palette.json').then(r => r.json());
     }
 
-    // --- Model yükleme ---
+    // Model yükle
     async function loadModelById(id) {
       if (!mv) return;
       if (!catalog.length) await loadData();
       const item = catalog.find(c => c.src.includes(`${id}.glb`) || c.src.includes(id));
-      if (!item) return console.warn("Model bulunamadı:", id);
+      if (!item) { console.warn('Model bulunamadı:', id); return; }
 
       currentModel = item;
       mv.src = item.src;
@@ -126,13 +117,12 @@
       if (item.defaults?.rotationY != null) mv.turntableRotation = item.defaults.rotationY;
     }
 
-
-    // --- Materyal uygula ---
+    // Materyal uygula
     async function applyMaterial(matId) {
       if (!mv) return;
       if (!palette.length) await loadData();
       const sw = palette.find(p => p.id === matId);
-      if (!sw) return console.warn("Palette yok:", matId);
+      if (!sw) { console.warn('Palette yok:', matId); return; }
 
       await mv.updateComplete;
       const model = mv.model;
@@ -143,17 +133,18 @@
         targets.includes(m.name.toLowerCase()) ||
         targets.some(t => m.name.toLowerCase().includes(t))
       );
-      if (!mats.length) return console.warn("Materyal yok:", model.materials.map(m => m.name));
+      if (!mats.length) { console.warn('Materyal yok:', model.materials.map(m => m.name)); return; }
 
       let tex = null;
       if (sw.texture && model.createTexture) {
         try { tex = await model.createTexture(sw.texture); }
-        catch (e) { console.warn("Texture yüklenemedi:", e); }
+        catch (e) { console.warn('Texture yüklenemedi:', e); }
       }
 
       for (const mat of mats) {
         const pbr = mat.pbrMetallicRoughness;
         if (!pbr) continue;
+
         if (tex) {
           if (pbr.setBaseColorTexture) pbr.setBaseColorTexture(tex);
           else if (pbr.baseColorTexture?.setTexture) pbr.baseColorTexture.setTexture(tex);
@@ -168,9 +159,7 @@
       }
     }
 
-
-    // --- Kamera preset ---
-
+    // Kamera preset
     function setCameraPreset(preset) {
       if (!mv) return;
       const map = {
@@ -184,25 +173,29 @@
       if (map[preset]) mv.cameraOrbit = map[preset];
     }
 
-    // --- Reset ---
+    // Reset
     function resetViewer() {
-      if (!mv) { console.warn('model-viewer bulunamadı'); return; }
-      if (currentModel?.defaults?.cameraPreset) {
-        setCameraPreset(currentModel.defaults.cameraPreset);
-      } else {
-        mv.cameraOrbit = '0deg 75deg auto';
-      }
+      if (!mv) return;
+      if (currentModel?.defaults?.cameraPreset) setCameraPreset(currentModel.defaults.cameraPreset);
+      else mv.cameraOrbit = '0deg 75deg auto';
       mv.fieldOfView = '45deg';
     }
 
-    // --- Share ---
+    // Paylaş
     function shareCurrentView() {
       const url = new URL(location.href);
       if (currentModel) url.searchParams.set('model', currentModel.src);
-      alert("Paylaşım linki:\n" + url.toString());
+      navigator.clipboard?.writeText(url.toString());
+      alert('Link kopyalandı:\n' + url.toString());
     }
-  </script>
 
+    // ui-enhance.js eventlerini bağla
+    window.addEventListener('pm:loadModel', e => loadModelById(e.detail.id));
+    window.addEventListener('pm:applyMaterial', e => applyMaterial(e.detail.id));
+    window.addEventListener('pm:setCamera', e => setCameraPreset(e.detail.preset));
+    window.addEventListener('pm:reset', () => resetViewer());
+    window.addEventListener('pm:share', () => shareCurrentView());
+  </script>
 </body>
 
 </html>
