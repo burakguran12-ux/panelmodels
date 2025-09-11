@@ -362,20 +362,33 @@ window.addEventListener('keydown', (e)=>{
     });
   }
 
-  // Palet çubukları (tek sırada, scroll ile kayar)
-  const row = document.getElementById('swrow');
-  if (row && palette.length) {
-    row.innerHTML = '';
-    palette.forEach(sw=>{
-      const el = document.createElement('span');
-      el.className = 'swatch';
-      if (sw.texture) el.style.backgroundImage = `url(${sw.texture})`;
-      if (sw.color)   el.style.backgroundColor = sw.color;
-      el.title = sw.name || '';
-      el.onclick = ()=>applySwatch(sw);
-      row.appendChild(el);
-    });
-  }
+  // Palet çubukları (tek sıra, hover büyütme)
+const row = document.getElementById('swwrap'); // ✅ doğru id
+if (row && palette.length) {
+  row.innerHTML = '';
+  palette.forEach(sw => {
+    const wrap = document.createElement('div');
+    wrap.className = 'swmini';
+
+    const tile = document.createElement('div');
+    tile.className = 'swatch';
+    if (sw.texture) tile.style.backgroundImage = `url(${sw.texture})`;
+    const hex = sw.color || sw["#"];           // palette.json’daki "#" alanını da destekle
+    if (hex) tile.style.background = hex;
+
+    tile.title = sw.name || '';
+    tile.onclick = () => applySwatch(sw);
+
+    const label = document.createElement('div');
+    label.className = 'slabel';
+    label.textContent = sw.name || '';
+
+    wrap.appendChild(tile);
+    wrap.appendChild(label);
+    row.appendChild(wrap);
+  });
+}
+
 
 
   // ---- UI Event Binding ----
