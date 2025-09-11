@@ -242,23 +242,52 @@ async function applySwatch(swatch) {
   const mats = pickTargetMaterials(mv.model, targets);
   if (!mats.length) return;
 
+  // 🔧 color alanı yoksa palette.json'daki "#" alanını kullan
+  const hex = swatch.color || swatch["#"] || "#ffffff";
   const isTexture = !!swatch.texture;
+
   for (const mat of mats) {
     const pbr = mat.pbrMetallicRoughness;
     if (isTexture) {
-      // Doku
-      const tex = await mv.createTexture(swatch.texture, {usage: "baseColorTexture"});
+      const tex = await mv.createTexture(swatch.texture, { usage: "baseColorTexture" });
       pbr.setBaseColorTexture(tex);
-      // Dokusuz renkten kalan tonu sıfırla (tam doku görünsün)
       pbr.setBaseColorFactor([1,1,1,1]);
     } else {
-      // Düz renk
-      const color = hexToLinearRGBA(swatch.color || "#ffffff");
+      const color = hexToLinearRGBA(hex);
       pbr.setBaseColorTexture(null);
       pbr.setBaseColorFactor(color);
     }
   }
 }
+
+// Palet çubukları (tek sırada, scroll ile kayar)
+const row = document.getElementById('swwrap'); // ❗ swrow değil swwrap
+if (row && palette.length) {
+  row.innerHTML = '';
+  palette.forEach(sw => {
+    const wrap = document.createElement('div');
+    wrap.className = 'swmini';
+
+    const tile = document.createElement('div');
+    tile.className = 'swatch';
+    if (sw.texture) tile.style.backgroundImage = `url(${sw.texture})`;
+    const hex = sw.color || sw["#"];
+    if (hex) tile.style.background = hex;
+
+    tile.title = sw.name || '';
+    tile.onclick = () => applySwatch(sw);
+
+    const label = document.createElement('div');
+    label.className = 'slabel';
+    label.textContent = sw.name || '';
+
+    wrap.appendChild(tile);
+    wrap.appendChild(label);
+    row.appendChild(wrap);
+  });
+}
+
+
 
 // sRGB hex -> Linear RGBA
 function hexToLinearRGBA(hex){
@@ -349,6 +378,77 @@ window.addEventListener('keydown', (e)=>{
       row.appendChild(el);
     });
   }
+
+
+  // ---- UI Event Binding ----
+
+// Preset butonları
+document.querySelectorAll('.presetbar .btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const p = btn.dataset.preset;
+    if (p === 'studio') { mv.exposure = 1.0; mv.shadowIntensity = 0.7; setEnvRot(0); }
+    if (p === 'day')    { mv.exposure = 1.2; mv.shadowIntensity = 0.5; setEnvRot(45); }
+    if (p === 'show')   { mv.exposure = 0.9; mv.shadowIntensity = 0.9; setEnvRot(15); }
+    // slider UI'ları da güncelle
+    exp.value    = mv.exposure;
+    shadow.value = mv.shadowIntensity;
+    envrot.value = getDeg(mv.getAttribute('environment-rotation'));
+  });
+});
+
+// Slider referansları
+const exp    = document.getElementById('exp');
+const shadow = document.getElementById('shadow');
+const envrot = document.getElementById('envrot');
+
+// Exposure / Shadow
+exp?.addEventListener('input',   e => mv.exposure        = parseFloat(e.target.value));
+shadow?.addEventListener('input',e => mv.shadowIntensity = parseFloat(e.target.value));
+
+// Env rotation helpers
+const setEnvRot = (deg) => mv.setAttribute('environment-rotation', `${Math.round(deg)}deg`);
+const getDeg = (s) => Number(String(s||'0deg').replace('deg','')) || 0;
+envrot?.addEventListener('input', e => setEnvRot(e.target.value));
+
+// Arkaplan (HSV -> HEX ve önizleme)
+const bgHue = document.getElementById('bgHue');
+const bgSat = document.getElementById('bgSat');
+const bgVal = document.getElementById('bgVal');
+const bgPrev= document.getElementById('bgPrev');
+const host  = document.getElementById('viewerHost');
+
+function hsv2hex(h,s,v){
+  s/=100; v/=100;
+  const f=(n,k=(n+h/60)%6)=> v - v*s*Math.max(0, Math.min(k,4-k,1));
+  const toHex=x=>('0'+Math.round(x*255).toString(16)).slice(-2);
+  const r=f(5), g=f(3), b=f(1);
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+function updateBG(){
+  const hex = hsv2hex(Number(bgHue.value), Number(bgSat.value), Number(bgVal.value));
+  host.style.background = hex;        // viewer container arkaplanı
+  bgPrev.style.background = hex;      // küçük önizleme karecik
+}
+[bgHue,bgSat,bgVal].forEach(el => el?.addEventListener('input', updateBG));
+document.getElementById('bgReset')?.addEventListener('click', ()=>{
+  bgHue.value = 180; bgSat.value = 25; bgVal.value = 55; updateBG();
+});
+updateBG();
+
+// Kamera ikonları (data-orbit)
+document.querySelectorAll('.iconbtn[data-orbit]').forEach(btn=>{
+  btn.addEventListener('click', ()=> { mv.cameraOrbit = btn.dataset.orbit; });
+});
+
+// FOV
+document.getElementById('fov')?.addEventListener('input', e=>{
+  mv.fieldOfView = `${e.target.value}deg`;
+});
+
+// Zoom
+document.getElementById('zoomIn') ?.addEventListener('click', ()=> mv.zoom( 0.15));
+document.getElementById('zoomOut')?.addEventListener('click', ()=> mv.zoom(-0.15));
+
 
   // URL’de ?model=… varsa ona git, yoksa ilk model
   const prm = new URLSearchParams(location.search);
