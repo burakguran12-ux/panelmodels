@@ -1,42 +1,42 @@
 [
   {
     "id": "antares",
-    "name": "antares",
+    "name": "Antares",
     "path": "models/antares.glb",
     "thumb": "thumbs/antares.png",
     "ext": ".glb"
   },
   {
     "id": "atlas",
-    "name": "atlas",
+    "name": "Atlas",
     "path": "models/atlas.glb",
     "thumb": "thumbs/atlas.png",
     "ext": ".glb"
   },
   {
     "id": "capella",
-    "name": "capella",
+    "name": "Capella",
     "path": "models/capella.glb",
     "thumb": "thumbs/capella.png",
     "ext": ".glb"
   },
   {
     "id": "diamond",
-    "name": "diamond",
+    "name": "Diamond",
     "path": "models/diamond.glb",
     "thumb": "thumbs/diamond.png",
     "ext": ".glb"
   },
   {
     "id": "rigel",
-    "name": "rigel",
+    "name": "Rigel",
     "path": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
     "ext": ".glb"
   },
   {
     "id": "vega",
-    "name": "vega",
+    "name": "Vega",
     "path": "models/vega.glb",
     "thumb": "thumbs/vega.png",
     "ext": ".glb"
