@@ -33,15 +33,5 @@
     "path": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
     "ext": ".glb"
-  },
-  {
-    "id": "capella",
-    "name": "capella",
-    "path": "models/capella.glb",
-    "thumb": "thumbs/capella.png",
-    "ext": ".glb"
   }
-
-
-
 ]
