@@ -21,6 +21,13 @@
     "ext": ".glb"
   },
   {
+    "id": "atlas",
+    "name": "atlas",
+    "path": "models/eski-glb/atlas.glb",
+    "thumb": "thumbs/atlas.png",
+    "ext": ".glb"
+  },
+  {
     "id": "rigel",
     "name": "rigel",
     "path": "models/rigel.glb",
