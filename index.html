@@ -5,15 +5,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PanelModels — Galeri Görüntüleyici</title>
-  <link rel="icon" href="favicon.ico?v=5" sizes="any">
+  <link rel="icon" href="favicon.ico?v=5" sizes="any" />
 
   <!-- Google Model Viewer -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
   <!-- Minimal tema -->
-  <link rel="stylesheet" href="css/viewer-makeup.css">
+  <link rel="stylesheet" href="css/viewer-makeup.css" />
 
-  <!-- Küçük kök stiller -->
   <style>
     :root {
       --accent: #68c3ff;
@@ -65,7 +64,7 @@
     <!-- SAĞ KAMERA DOCK -->
     <nav id="cameras" class="pm-right">
       <div class="pm-tool" data-cam="front"><span>Ön</span></div>
-      <div class="pm-tool" data-cam="iso"><span>İzo</span></div>
+      <div class="pm-tool" data-cam="iso45"><span>İzo</span></div>
       <div class="pm-tool" data-cam="zoom"><span>Zoom</span></div>
     </nav>
 
@@ -73,10 +72,6 @@
     <footer id="palette" class="pm-palette"><!-- swatch'lar JS ile çizilir --></footer>
   </div>
 
-  <!-- (Opsiyonel) UI enhancer – kalabilir -->
-  <script src="js/ui-enhance.js"></script>
-
-  <!-- Uçtan uca davranışlar -->
   <script>
     const mv = document.getElementById('mv');
     const cardGrid = document.getElementById('cardGrid');
@@ -86,13 +81,23 @@
     let palette = [];
     let currentModel = null;
 
-    // ---- JSON veri yükleme
+    // ---- JSON veri yükleme (palette yoksa default oluşturur)
     async function loadData() {
       const bust = `?v=${Date.now()}`;
-      [catalog, palette] = await Promise.all([
-        fetch('catalog.json' + bust).then(r => r.json()),
-        fetch('palette.json' + bust).then(r => r.json()).catch(() => [])
-      ]);
+      catalog = await fetch('catalog.json' + bust).then(r => r.json());
+
+      try {
+        palette = await fetch('palette.json' + bust).then(r => r.json());
+      } catch (_) {
+        // defaults — isteğe göre düzenleyebilirsin
+        palette = [
+          { id: '120-teak', color: '#7c6247' },
+          { id: '108-gold', color: '#b29a70' },
+          { id: 'white', color: '#e8e8e8' },
+          { id: 'charcoal', color: '#444444' }
+        ];
+        console.warn('palette.json bulunamadı; default palette yüklendi.');
+      }
     }
 
     // ---- Kartları çiz
@@ -100,7 +105,7 @@
       if (!cardGrid) return;
       cardGrid.innerHTML = '';
       catalog.forEach((it) => {
-        const id = (it.src.split('/').pop() || '').replace('.glb', ''); // vega
+        const id = (it.src.split('/').pop() || '').replace('.glb', '');
         const el = document.createElement('div');
         el.className = 'pm-card';
         el.dataset.model = id;
@@ -114,8 +119,8 @@
         `;
         el.addEventListener('click', () => {
           loadModelById(id);
-          // ui-enhance dinliyorsa yayınla
-          window.dispatchEvent(new CustomEvent('pm:loadModel', { detail: { id } }));
+          document.querySelectorAll('.pm-card.is-active').forEach(c => c.classList.remove('is-active'));
+          el.classList.add('is-active');
         });
         cardGrid.appendChild(el);
       });
@@ -123,11 +128,8 @@
 
     // ---- Swatch'ları çiz
     function renderSwatches() {
-      const host = document.querySelector('.pm-palette');
-      if (!host) return;
-
-      // Önce temizle
-      host.querySelectorAll('.pm-swatch').forEach(n => n.remove());
+      if (!paletteHost) return;
+      paletteHost.querySelectorAll('.pm-swatch').forEach(n => n.remove());
 
       palette.forEach(sw => {
         const dot = document.createElement('div');
@@ -142,16 +144,13 @@
           dot.style.background = sw.color;
         }
 
-        // Swatch davranışı
         dot.addEventListener('click', () => {
           document.querySelectorAll('.pm-swatch.is-active').forEach(s => s.classList.remove('is-active'));
           dot.classList.add('is-active');
-          console.log('[swatch]', sw.id);
           applyMaterial(sw.id);
-          window.dispatchEvent(new CustomEvent('pm:applyMaterial', { detail: { id: sw.id } }));
         });
 
-        host.appendChild(dot);
+        paletteHost.appendChild(dot);
       });
     }
 
@@ -167,14 +166,9 @@
 
       if (item.defaults?.cameraPreset) setCameraPreset(item.defaults.cameraPreset);
       if (item.defaults?.rotationY != null) mv.turntableRotation = item.defaults.rotationY;
-
-      // aktif kart işaretle
-      document.querySelectorAll('.pm-card.is-active').forEach(c => c.classList.remove('is-active'));
-      document.querySelector(`.pm-card[data-model="${id}"]`)?.classList.add('is-active');
     }
 
-    // ---- Materyal uygula (fallback: hedef yoksa tüm materyaller)
-
+    // ---- Materyal uygula (mutlak URL + eski/yeni API + fallback)
     async function applyMaterial(matId) {
       if (!mv) return;
 
@@ -185,8 +179,8 @@
       const model = mv.model;
       if (!model) { console.warn('Model yok'); return; }
 
-      // 1) Hedef materyal(ler) – yoksa hepsine uygula
       const targetsLc = (currentModel?.targetMaterials || ['mdf-panel']).map(s => String(s).toLowerCase());
+
       let mats = model.materials.filter(m =>
         targetsLc.includes(m.name.toLowerCase()) ||
         targetsLc.some(t => m.name.toLowerCase().includes(t))
@@ -196,7 +190,6 @@
         mats = [...model.materials];
       }
 
-      // 2) Texture hazırla (mutlak URL + iki farklı API fallback)
       let tex = null;
       if (sw.texture) {
         try {
@@ -211,19 +204,15 @@
         }
       }
 
-      // 3) Cross-version setter helper’ları
       const setColor = (pbr, rgba) => {
         if (typeof pbr.setBaseColorFactor === 'function') pbr.setBaseColorFactor(rgba);
-        else pbr.baseColorFactor = rgba; // ⬅️ yeni/alternatif yol
+        else pbr.baseColorFactor = rgba;
       };
       const setTex = (pbr, t) => {
         if (typeof pbr.setBaseColorTexture === 'function') pbr.setBaseColorTexture(t);
         else if (pbr.baseColorTexture?.setTexture) pbr.baseColorTexture.setTexture(t);
-        else pbr.baseColorTexture = t ?? null; // ⬅️ en basit atama
+        else pbr.baseColorTexture = t ?? null;
       };
-
-      // 4) sRGB hex → approx linear RGBA
-
       const hexToRGBA = (hex) => {
         const h = String(hex || '#ffffff').replace('#', '');
         const r = parseInt(h.slice(0, 2), 16) / 255;
@@ -232,27 +221,26 @@
         return [r, g, b, 1];
       };
 
-      // 5) Uygula
       for (const mat of mats) {
         const pbr = mat.pbrMetallicRoughness;
         if (!pbr) continue;
 
         if (tex) {
           setTex(pbr, tex);
-          setColor(pbr, [1, 1, 1, 1]); // dokunun rengi bozulmasın
+          setColor(pbr, [1, 1, 1, 1]);
         } else if (sw.color) {
-          setTex(pbr, null);        // varsa dokuyu kaldır
+          setTex(pbr, null);
           setColor(pbr, hexToRGBA(sw.color));
         }
       }
 
       console.log('[material OK]', sw.id, '→', mats.map(m => m.name));
     }
+
     // ---- Kamera / Reset / Paylaş
     function setCameraPreset(preset) {
       if (!mv) return;
 
-      // Ön/arka/sol/sağ/izo
       const orbits = {
         front: '0deg 90deg auto',
         back: '180deg 90deg auto',
@@ -266,7 +254,6 @@
         return;
       }
 
-      // Zoom: gerçekten yaklaştır
       if (preset === 'zoom') {
         mv.zoom?.(0.25);
         setTimeout(() => mv.zoom?.(0.25), 120);
@@ -284,6 +271,7 @@
       const url = new URL(location.href);
       if (currentModel) url.searchParams.set('model', currentModel.src);
       const link = url.toString();
+
       if (navigator.clipboard?.writeText) {
         navigator.clipboard.writeText(link).then(
           () => alert('Link kopyalandı:\n' + link),
@@ -294,22 +282,15 @@
       }
     }
 
-    // ---- Statik butonlar (kamera & overlay)
+    // ---- Statik butonlar
     document.querySelectorAll('.pm-tool').forEach(btn => {
       btn.addEventListener('click', () => {
         const preset = btn.dataset.cam;
         setCameraPreset(preset);
-        window.dispatchEvent(new CustomEvent('pm:setCamera', { detail: { preset } }));
       });
     });
-    document.getElementById('btnReset')?.addEventListener('click', () => {
-      resetViewer();
-      window.dispatchEvent(new CustomEvent('pm:reset', { detail: {} }));
-    });
-    document.getElementById('btnShare')?.addEventListener('click', () => {
-      shareCurrentView();
-      window.dispatchEvent(new CustomEvent('pm:share', { detail: {} }));
-    });
+    document.getElementById('btnReset')?.addEventListener('click', () => resetViewer());
+    document.getElementById('btnShare')?.addEventListener('click', () => shareCurrentView());
 
     // ---- Boot
     (async function boot() {
@@ -317,7 +298,6 @@
       renderCards();
       renderSwatches();
 
-      // Başlangıç modeli: ?model=... varsa onu, yoksa ilkini yükle
       const qs = new URLSearchParams(location.search);
       const direct = qs.get('model');
       if (direct) {
@@ -326,14 +306,14 @@
       } else if (catalog[0]) {
         const id = (catalog[0].src.split('/').pop() || '').replace('.glb', '');
         await loadModelById(id);
+        // ilk kartı işaretle
+        document.querySelector(`.pm-card[data-model="${id}"]`)?.classList.add('is-active');
       }
 
-      // İlk swatch'ı görsel olarak aktifle
+      // ilk swatch'ı görsel olarak aktifle
       const firstSw = document.querySelector('.pm-swatch');
       if (firstSw) firstSw.classList.add('is-active');
     })();
-  </script>
-
   </script>
 </body>
 
