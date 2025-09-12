@@ -44,17 +44,7 @@
     <!-- SOL KATALOG -->
     <aside id="sidebar" class="pm-left">
       <div class="pm-section-title">Modeller</div>
-      <div class="pm-card-grid">
-        <div class="pm-card is-active" data-model="vega">
-          <img class="pm-thumb" src="thumbs/vega.png" alt="">
-          <div>
-            <div class="pm-card-title">Vega Panel</div>
-            <div class="pm-card-sub">Ahşap profil</div>
-          </div>
-          <span class="pm-chip">GLB</span>
-        </div>
-        <!-- diğer modeller -->
-      </div>
+      <div class="pm-card-grid" id="cardGrid"></div> <!-- boş -->
     </aside>
 
     <!-- ORTA GÖRÜNTÜLEYİCİ -->
@@ -79,33 +69,82 @@
     </nav>
 
     <!-- ALT RENK PALETİ (main dışına alındı) -->
-    <footer id="palette" class="pm-palette">
-      <div class="pm-swatch is-active" data-mat="120-teak"></div>
-      <div class="pm-swatch" data-mat="108-gold"></div>
-      <!-- diğer renkler -->
+    <footer id="palette" class="pm-palette" id="paletteBar">
+      <div id="swatchRow"></div> <!-- boş -->
     </footer>
   </div>
 
   <!-- UI Enhancer -->
-  <script src="js/ui-enhance.js"></script>
 
   <!-- Event hook & gerçek davranışlar -->
+
+  <script src="js/ui-enhance.js"></script>
   <script>
     const mv = document.getElementById('mv');
+    const cardGrid = document.getElementById('cardGrid') || document.querySelector('.pm-card-grid');
+    const swatchRow = document.getElementById('swatchRow') || document.querySelector('.pm-palette');
+
     let catalog = [];
     let palette = [];
     let currentModel = null;
 
-    // JSON yükleyiciler
+    // JSON'ları yükle
     async function loadData() {
-      catalog = await fetch('catalog.json').then(r => r.json());
-      palette = await fetch('palette.json').then(r => r.json());
+      const bust = `?v=${Date.now()}`;
+      [catalog, palette] = await Promise.all([
+        fetch('catalog.json' + bust).then(r => r.json()),
+        fetch('palette.json' + bust).then(r => r.json()).catch(() => [])
+      ]);
     }
 
-    // Model yükle
+    // Sol kartları çiz
+    function renderCards() {
+      if (!cardGrid) return;
+      cardGrid.innerHTML = '';
+      catalog.forEach((it) => {
+        const id = (it.src.split('/').pop() || '').replace('.glb', ''); // vega
+        const el = document.createElement('div');
+        el.className = 'pm-card';
+        el.dataset.model = id;
+        el.innerHTML = `
+        <img class="pm-thumb" src="${it.thumb || 'thumbs/default.png'}" alt="">
+        <div>
+          <div class="pm-card-title">${it.name || id}</div>
+          <div class="pm-card-sub">GLB</div>
+        </div>
+        <span class="pm-chip">GLB</span>
+      `;
+        cardGrid.appendChild(el);
+      });
+    }
+
+    // Alt paleti çiz
+    function renderSwatches() {
+      if (!swatchRow) return;
+      // Eğer swatchRow zaten .pm-palette ise, içine swatch'ları atacağız
+      const host = swatchRow.classList.contains('pm-palette') ? swatchRow : swatchRow.parentElement;
+      const container = swatchRow.classList.contains('pm-palette') ? swatchRow : host;
+      // Listeyi temizle (yalnızca .pm-swatch'ları)
+      container.querySelectorAll('.pm-swatch').forEach(n => n.remove());
+
+      palette.forEach(sw => {
+        const dot = document.createElement('div');
+        dot.className = 'pm-swatch';
+        dot.dataset.mat = sw.id;
+        if (sw.texture) {
+          dot.style.backgroundImage = `url(${sw.texture})`;
+          dot.style.backgroundSize = 'cover';
+          dot.style.backgroundPosition = 'center';
+        } else if (sw.color) {
+          dot.style.background = sw.color;
+        }
+        container.appendChild(dot);
+      });
+    }
+
+    // --- Davranışlar (viewer tarafı) ---
     async function loadModelById(id) {
       if (!mv) return;
-      if (!catalog.length) await loadData();
       const item = catalog.find(c => c.src.includes(`${id}.glb`) || c.src.includes(id));
       if (!item) { console.warn('Model bulunamadı:', id); return; }
 
@@ -115,12 +154,15 @@
 
       if (item.defaults?.cameraPreset) setCameraPreset(item.defaults.cameraPreset);
       if (item.defaults?.rotationY != null) mv.turntableRotation = item.defaults.rotationY;
+
+      // Sol listede aktif kartı işaretle
+      document.querySelectorAll('.pm-card.is-active').forEach(c => c.classList.remove('is-active'));
+      const active = document.querySelector(`.pm-card[data-model="${id}"]`);
+      active?.classList.add('is-active');
     }
 
-    // Materyal uygula
     async function applyMaterial(matId) {
       if (!mv) return;
-      if (!palette.length) await loadData();
       const sw = palette.find(p => p.id === matId);
       if (!sw) { console.warn('Palette yok:', matId); return; }
 
@@ -137,14 +179,12 @@
 
       let tex = null;
       if (sw.texture && model.createTexture) {
-        try { tex = await model.createTexture(sw.texture); }
-        catch (e) { console.warn('Texture yüklenemedi:', e); }
+        try { tex = await model.createTexture(sw.texture); } catch (e) { console.warn('Texture yüklenemedi:', e); }
       }
 
       for (const mat of mats) {
         const pbr = mat.pbrMetallicRoughness;
         if (!pbr) continue;
-
         if (tex) {
           if (pbr.setBaseColorTexture) pbr.setBaseColorTexture(tex);
           else if (pbr.baseColorTexture?.setTexture) pbr.baseColorTexture.setTexture(tex);
@@ -159,7 +199,6 @@
       }
     }
 
-    // Kamera preset
     function setCameraPreset(preset) {
       if (!mv) return;
       const map = {
@@ -173,7 +212,6 @@
       if (map[preset]) mv.cameraOrbit = map[preset];
     }
 
-    // Reset
     function resetViewer() {
       if (!mv) return;
       if (currentModel?.defaults?.cameraPreset) setCameraPreset(currentModel.defaults.cameraPreset);
@@ -181,7 +219,6 @@
       mv.fieldOfView = '45deg';
     }
 
-    // Paylaş
     function shareCurrentView() {
       const url = new URL(location.href);
       if (currentModel) url.searchParams.set('model', currentModel.src);
@@ -189,12 +226,30 @@
       alert('Link kopyalandı:\n' + url.toString());
     }
 
-    // ui-enhance.js eventlerini bağla
+    // ui-enhance.js eventlerini dinle
     window.addEventListener('pm:loadModel', e => loadModelById(e.detail.id));
     window.addEventListener('pm:applyMaterial', e => applyMaterial(e.detail.id));
     window.addEventListener('pm:setCamera', e => setCameraPreset(e.detail.preset));
     window.addEventListener('pm:reset', () => resetViewer());
     window.addEventListener('pm:share', () => shareCurrentView());
+
+    // BOOT
+    (async function boot() {
+      await loadData();
+      renderCards();
+      renderSwatches();
+
+      // Başlangıç modeli: querystring ?model=... varsa onu, yoksa ilkini yükle
+      const qs = new URLSearchParams(location.search);
+      const direct = qs.get('model');
+      if (direct) {
+        const id = (direct.split('/').pop() || '').replace('.glb', '');
+        await loadModelById(id);
+      } else if (catalog[0]) {
+        const id = (catalog[0].src.split('/').pop() || '').replace('.glb', '');
+        await loadModelById(id);
+      }
+    })();
   </script>
 </body>
 
