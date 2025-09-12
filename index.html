@@ -174,156 +174,187 @@
     }
 
     // ---- Materyal uygula (fallback: hedef yoksa tüm materyaller)
+
     async function applyMaterial(matId) {
       if (!mv) return;
 
-      // paletten öğeyi bul
       const sw = palette.find(p => p.id === matId);
       if (!sw) { console.warn('Palette yok:', matId); return; }
 
       await mv.updateComplete;
       const model = mv.model;
-      if (!model) return;
+      if (!model) { console.warn('Model yok'); return; }
 
-      // Hedef materyalleri hazırla (lowercase)
-      const targets = (currentModel?.targetMaterials || ['mdf-panel']).map(s => String(s).toLowerCase());
-
-      // Hedefleri bul; yoksa tüm materyallere uygula (fallback)
+      // 1) Hedef materyal(ler) – yoksa hepsine uygula
+      const targetsLc = (currentModel?.targetMaterials || ['mdf-panel']).map(s => String(s).toLowerCase());
       let mats = model.materials.filter(m =>
-        targets.includes(m.name.toLowerCase()) ||
-        targets.some(t => m.name.toLowerCase().includes(t))
+        targetsLc.includes(m.name.toLowerCase()) ||
+        targetsLc.some(t => m.name.toLowerCase().includes(t))
       );
       if (!mats.length) {
-        console.warn('Hedef materyal bulunamadı, tüm materyallere uygulanacak. Mevcut:', model.materials.map(m => m.name));
+        console.warn('Hedef materyal bulunamadı, TÜM materyallere uygulanacak. Mevcut:', model.materials.map(m => m.name));
         mats = [...model.materials];
       }
 
-      // Texture oluştur (mutlak URL ile)
+      // 2) Texture hazırla (mutlak URL + iki farklı API fallback)
       let tex = null;
-      if (sw.texture && model.createTexture) {
+      if (sw.texture) {
         try {
           const texUrl = new URL(sw.texture, document.baseURI).toString();
-          tex = await model.createTexture(texUrl);
+          if (typeof model.createTexture === 'function') {
+            tex = await model.createTexture(texUrl);
+          } else if (typeof mv.createTexture === 'function') {
+            tex = await mv.createTexture(texUrl, { usage: 'baseColorTexture' });
+          }
         } catch (e) {
           console.warn('Texture yüklenemedi:', sw.texture, e);
         }
       }
 
-      // Uygula
+      // 3) Cross-version setter helper’ları
+      const setColor = (pbr, rgba) => {
+        if (typeof pbr.setBaseColorFactor === 'function') pbr.setBaseColorFactor(rgba);
+        else pbr.baseColorFactor = rgba; // ⬅️ yeni/alternatif yol
+      };
+      const setTex = (pbr, t) => {
+        if (typeof pbr.setBaseColorTexture === 'function') pbr.setBaseColorTexture(t);
+        else if (pbr.baseColorTexture?.setTexture) pbr.baseColorTexture.setTexture(t);
+        else pbr.baseColorTexture = t ?? null; // ⬅️ en basit atama
+      };
+
+      // 4) sRGB hex → approx linear RGBA
+
+      const hexToRGBA = (hex) => {
+        const h = String(hex || '#ffffff').replace('#', '');
+        const r = parseInt(h.slice(0, 2), 16) / 255;
+        const g = parseInt(h.slice(2, 4), 16) / 255;
+        const b = parseInt(h.slice(4, 6), 16) / 255;
+        return [r, g, b, 1];
+      };
+
+      // 5) Uygula
       for (const mat of mats) {
         const pbr = mat.pbrMetallicRoughness;
         if (!pbr) continue;
 
         if (tex) {
-          if (pbr.setBaseColorTexture) pbr.setBaseColorTexture(tex);
-          else if (pbr.baseColorTexture?.setTexture) pbr.baseColorTexture.setTexture(tex);
-          if (pbr.setBaseColorFactor) pbr.setBaseColorFactor([1, 1, 1, 1]);
+          setTex(pbr, tex);
+          setColor(pbr, [1, 1, 1, 1]); // dokunun rengi bozulmasın
         } else if (sw.color) {
-          const hex = sw.color.replace('#', '');
-          const r = parseInt(hex.slice(0, 2), 16) / 255;
-          const g = parseInt(hex.slice(2, 4), 16) / 255;
-          const b = parseInt(hex.slice(4, 6), 16) / 255;
-          if (pbr.setBaseColorFactor) pbr.setBaseColorFactor([r, g, b, 1]);
+          setTex(pbr, null);        // varsa dokuyu kaldır
+          setColor(pbr, hexToRGBA(sw.color));
         }
       }
+
+      console.log('[material OK]', sw.id, '→', mats.map(m => m.name));
     }
+  </script>
 
 
 
-    // ---- Kamera / Reset / Paylaş
-    function setCameraPreset(preset) {
-      if (!mv) return;
-
-      // Önce orbit'i set et (ön/izo vs.)
-      const orbits = {
-        front: '0deg 90deg auto',
-        back: '180deg 90deg auto',
-        left: '-90deg 90deg auto',
-        right: '90deg 90deg auto',
-        iso45: '30deg 80deg auto'
-      };
-      if (orbits[preset]) {
-        mv.cameraOrbit = orbits[preset];
-        // hedefe hızlı geçiş
-        mv.jumpCameraToGoal?.();
-        return;
-      }
-
-      // Zoom özel davranış (gerçek zoom)
-      if (preset === 'zoom') {
-        // daha net etki için iki kademelik yakınlaştırma
-        mv.zoom?.(0.25);
-        setTimeout(() => mv.zoom?.(0.25), 120);
-        return;
-      }
-    }
 
 
-    function resetViewer() {
-      if (!mv) return;
-      if (currentModel?.defaults?.cameraPreset) setCameraPreset(currentModel.defaults.cameraPreset);
-      else mv.cameraOrbit = '0deg 75deg auto';
-      mv.fieldOfView = '45deg';
-    }
-
-    function shareCurrentView() {
-      const url = new URL(location.href);
-      if (currentModel) url.searchParams.set('model', currentModel.src);
-      const link = url.toString();
-      console.log('[share]', link);
-
-      if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(link).then(
-          () => alert('Link kopyalandı:\n' + link),
-          () => { prompt('Kopyalayamadım, elle kopyala:', link); }
-        );
-      } else {
-        // Eski tarayıcılar
-        prompt('Kopyalamak için seç & kopyala:', link);
-      }
-    }
 
 
-    // ---- Statik butonlar (kamera & overlay)
-    document.querySelectorAll('.pm-tool').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const preset = btn.dataset.cam;
-        console.log('[cam]', preset);
-        setCameraPreset(preset);
-        window.dispatchEvent(new CustomEvent('pm:setCamera', { detail: { preset } }));
-      });
-    });
 
-    document.getElementById('btnReset')?.addEventListener('click', () => {
-      resetViewer();
-      window.dispatchEvent(new CustomEvent('pm:reset', { detail: {} }));
-    });
-    document.getElementById('btnShare')?.addEventListener('click', () => {
-      shareCurrentView();
-      window.dispatchEvent(new CustomEvent('pm:share', { detail: {} }));
-    });
 
-    // ---- Boot
-    (async function boot() {
-      await loadData();
-      renderCards();
-      renderSwatches();
 
-      // Başlangıç modeli: ?model=... varsa onu, yoksa ilkini yükle
-      const qs = new URLSearchParams(location.search);
-      const direct = qs.get('model');
-      if (direct) {
-        const id = (direct.split('/').pop() || '').replace('.glb', '');
-        await loadModelById(id);
-      } else if (catalog[0]) {
-        const id = (catalog[0].src.split('/').pop() || '').replace('.glb', '');
-        await loadModelById(id);
-      }
 
-      // İlk swatch'ı görsel olarak aktifle
-      const firstSw = document.querySelector('.pm-swatch');
-      if (firstSw) firstSw.classList.add('is-active');
-    })();
+
+  // ---- Kamera / Reset / Paylaş
+  function setCameraPreset(preset) {
+  if (!mv) return;
+
+  // Önce orbit'i set et (ön/izo vs.)
+  const orbits = {
+  front: '0deg 90deg auto',
+  back: '180deg 90deg auto',
+  left: '-90deg 90deg auto',
+  right: '90deg 90deg auto',
+  iso45: '30deg 80deg auto'
+  };
+  if (orbits[preset]) {
+  mv.cameraOrbit = orbits[preset];
+  // hedefe hızlı geçiş
+  mv.jumpCameraToGoal?.();
+  return;
+  }
+
+  // Zoom özel davranış (gerçek zoom)
+  if (preset === 'zoom') {
+  // daha net etki için iki kademelik yakınlaştırma
+  mv.zoom?.(0.25);
+  setTimeout(() => mv.zoom?.(0.25), 120);
+  return;
+  }
+  }
+
+
+  function resetViewer() {
+  if (!mv) return;
+  if (currentModel?.defaults?.cameraPreset) setCameraPreset(currentModel.defaults.cameraPreset);
+  else mv.cameraOrbit = '0deg 75deg auto';
+  mv.fieldOfView = '45deg';
+  }
+
+  function shareCurrentView() {
+  const url = new URL(location.href);
+  if (currentModel) url.searchParams.set('model', currentModel.src);
+  const link = url.toString();
+  console.log('[share]', link);
+
+  if (navigator.clipboard?.writeText) {
+  navigator.clipboard.writeText(link).then(
+  () => alert('Link kopyalandı:\n' + link),
+  () => { prompt('Kopyalayamadım, elle kopyala:', link); }
+  );
+  } else {
+  // Eski tarayıcılar
+  prompt('Kopyalamak için seç & kopyala:', link);
+  }
+  }
+
+
+  // ---- Statik butonlar (kamera & overlay)
+  document.querySelectorAll('.pm-tool').forEach(btn => {
+  btn.addEventListener('click', () => {
+  const preset = btn.dataset.cam;
+  console.log('[cam]', preset);
+  setCameraPreset(preset);
+  window.dispatchEvent(new CustomEvent('pm:setCamera', { detail: { preset } }));
+  });
+  });
+
+  document.getElementById('btnReset')?.addEventListener('click', () => {
+  resetViewer();
+  window.dispatchEvent(new CustomEvent('pm:reset', { detail: {} }));
+  });
+  document.getElementById('btnShare')?.addEventListener('click', () => {
+  shareCurrentView();
+  window.dispatchEvent(new CustomEvent('pm:share', { detail: {} }));
+  });
+
+  // ---- Boot
+  (async function boot() {
+  await loadData();
+  renderCards();
+  renderSwatches();
+
+  // Başlangıç modeli: ?model=... varsa onu, yoksa ilkini yükle
+  const qs = new URLSearchParams(location.search);
+  const direct = qs.get('model');
+  if (direct) {
+  const id = (direct.split('/').pop() || '').replace('.glb', '');
+  await loadModelById(id);
+  } else if (catalog[0]) {
+  const id = (catalog[0].src.split('/').pop() || '').replace('.glb', '');
+  await loadModelById(id);
+  }
+
+  // İlk swatch'ı görsel olarak aktifle
+  const firstSw = document.querySelector('.pm-swatch');
+  if (firstSw) firstSw.classList.add('is-active');
+  })();
   </script>
 </body>
 
