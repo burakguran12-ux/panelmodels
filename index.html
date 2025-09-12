@@ -248,113 +248,92 @@
 
       console.log('[material OK]', sw.id, '→', mats.map(m => m.name));
     }
+    // ---- Kamera / Reset / Paylaş
+    function setCameraPreset(preset) {
+      if (!mv) return;
+
+      // Ön/arka/sol/sağ/izo
+      const orbits = {
+        front: '0deg 90deg auto',
+        back: '180deg 90deg auto',
+        left: '-90deg 90deg auto',
+        right: '90deg 90deg auto',
+        iso45: '30deg 80deg auto'
+      };
+      if (orbits[preset]) {
+        mv.cameraOrbit = orbits[preset];
+        mv.jumpCameraToGoal?.();
+        return;
+      }
+
+      // Zoom: gerçekten yaklaştır
+      if (preset === 'zoom') {
+        mv.zoom?.(0.25);
+        setTimeout(() => mv.zoom?.(0.25), 120);
+      }
+    }
+
+    function resetViewer() {
+      if (!mv) return;
+      if (currentModel?.defaults?.cameraPreset) setCameraPreset(currentModel.defaults.cameraPreset);
+      else mv.cameraOrbit = '0deg 75deg auto';
+      mv.fieldOfView = '45deg';
+    }
+
+    function shareCurrentView() {
+      const url = new URL(location.href);
+      if (currentModel) url.searchParams.set('model', currentModel.src);
+      const link = url.toString();
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(link).then(
+          () => alert('Link kopyalandı:\n' + link),
+          () => { prompt('Kopyalayamadım, elle kopyala:', link); }
+        );
+      } else {
+        prompt('Kopyalamak için seç & kopyala:', link);
+      }
+    }
+
+    // ---- Statik butonlar (kamera & overlay)
+    document.querySelectorAll('.pm-tool').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.dataset.cam;
+        setCameraPreset(preset);
+        window.dispatchEvent(new CustomEvent('pm:setCamera', { detail: { preset } }));
+      });
+    });
+    document.getElementById('btnReset')?.addEventListener('click', () => {
+      resetViewer();
+      window.dispatchEvent(new CustomEvent('pm:reset', { detail: {} }));
+    });
+    document.getElementById('btnShare')?.addEventListener('click', () => {
+      shareCurrentView();
+      window.dispatchEvent(new CustomEvent('pm:share', { detail: {} }));
+    });
+
+    // ---- Boot
+    (async function boot() {
+      await loadData();
+      renderCards();
+      renderSwatches();
+
+      // Başlangıç modeli: ?model=... varsa onu, yoksa ilkini yükle
+      const qs = new URLSearchParams(location.search);
+      const direct = qs.get('model');
+      if (direct) {
+        const id = (direct.split('/').pop() || '').replace('.glb', '');
+        await loadModelById(id);
+      } else if (catalog[0]) {
+        const id = (catalog[0].src.split('/').pop() || '').replace('.glb', '');
+        await loadModelById(id);
+      }
+
+      // İlk swatch'ı görsel olarak aktifle
+      const firstSw = document.querySelector('.pm-swatch');
+      if (firstSw) firstSw.classList.add('is-active');
+    })();
   </script>
 
-
-
-
-
-
-
-
-
-
-
-
-  // ---- Kamera / Reset / Paylaş
-  function setCameraPreset(preset) {
-  if (!mv) return;
-
-  // Önce orbit'i set et (ön/izo vs.)
-  const orbits = {
-  front: '0deg 90deg auto',
-  back: '180deg 90deg auto',
-  left: '-90deg 90deg auto',
-  right: '90deg 90deg auto',
-  iso45: '30deg 80deg auto'
-  };
-  if (orbits[preset]) {
-  mv.cameraOrbit = orbits[preset];
-  // hedefe hızlı geçiş
-  mv.jumpCameraToGoal?.();
-  return;
-  }
-
-  // Zoom özel davranış (gerçek zoom)
-  if (preset === 'zoom') {
-  // daha net etki için iki kademelik yakınlaştırma
-  mv.zoom?.(0.25);
-  setTimeout(() => mv.zoom?.(0.25), 120);
-  return;
-  }
-  }
-
-
-  function resetViewer() {
-  if (!mv) return;
-  if (currentModel?.defaults?.cameraPreset) setCameraPreset(currentModel.defaults.cameraPreset);
-  else mv.cameraOrbit = '0deg 75deg auto';
-  mv.fieldOfView = '45deg';
-  }
-
-  function shareCurrentView() {
-  const url = new URL(location.href);
-  if (currentModel) url.searchParams.set('model', currentModel.src);
-  const link = url.toString();
-  console.log('[share]', link);
-
-  if (navigator.clipboard?.writeText) {
-  navigator.clipboard.writeText(link).then(
-  () => alert('Link kopyalandı:\n' + link),
-  () => { prompt('Kopyalayamadım, elle kopyala:', link); }
-  );
-  } else {
-  // Eski tarayıcılar
-  prompt('Kopyalamak için seç & kopyala:', link);
-  }
-  }
-
-
-  // ---- Statik butonlar (kamera & overlay)
-  document.querySelectorAll('.pm-tool').forEach(btn => {
-  btn.addEventListener('click', () => {
-  const preset = btn.dataset.cam;
-  console.log('[cam]', preset);
-  setCameraPreset(preset);
-  window.dispatchEvent(new CustomEvent('pm:setCamera', { detail: { preset } }));
-  });
-  });
-
-  document.getElementById('btnReset')?.addEventListener('click', () => {
-  resetViewer();
-  window.dispatchEvent(new CustomEvent('pm:reset', { detail: {} }));
-  });
-  document.getElementById('btnShare')?.addEventListener('click', () => {
-  shareCurrentView();
-  window.dispatchEvent(new CustomEvent('pm:share', { detail: {} }));
-  });
-
-  // ---- Boot
-  (async function boot() {
-  await loadData();
-  renderCards();
-  renderSwatches();
-
-  // Başlangıç modeli: ?model=... varsa onu, yoksa ilkini yükle
-  const qs = new URLSearchParams(location.search);
-  const direct = qs.get('model');
-  if (direct) {
-  const id = (direct.split('/').pop() || '').replace('.glb', '');
-  await loadModelById(id);
-  } else if (catalog[0]) {
-  const id = (catalog[0].src.split('/').pop() || '').replace('.glb', '');
-  await loadModelById(id);
-  }
-
-  // İlk swatch'ı görsel olarak aktifle
-  const firstSw = document.querySelector('.pm-swatch');
-  if (firstSw) firstSw.classList.add('is-active');
-  })();
   </script>
 </body>
 
