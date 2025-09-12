@@ -39,10 +39,10 @@
       <small class="hint">Galeri • Malzeme paleti • Sahne & Kamera</small>
       <div class="spacer"></div>
       <button id="fsBtn" class="btn only-mobile" aria-label="Tam ekran">⤢</button>
-    </header>
-
-    <!-- SOL KATALOG -->
-    <aside id="sidebar" class="pm-left">
+      </header>
+  <div id="overlay" class="pm-overlay-mask" hidden></div>
+      <!-- SOL KATALOG -->
+      <aside id="sidebar" class="pm-left">
       <div class="pm-section-title">Modeller</div>
       <div class="pm-card-grid" id="cardGrid"><!-- kartlar JS ile çizilir --></div>
     </aside>
@@ -309,6 +309,52 @@
         // ilk kartı işaretle
         document.querySelector(`.pm-card[data-model="${id}"]`)?.classList.add('is-active');
       }
+
+                // --- Mobil sol menü toggle ---
+          const menuBtn  = document.getElementById('menuBtn');
+          const sidebar  = document.getElementById('sidebar');
+          const overlay  = document.getElementById('overlay');
+
+          function closeSidebar(){ 
+            sidebar?.classList.remove('open'); 
+            overlay?.setAttribute('hidden','');
+          }
+          function openSidebar(){ 
+            sidebar?.classList.add('open'); 
+            overlay?.removeAttribute('hidden');
+          }
+
+          menuBtn?.addEventListener('click', ()=> {
+            if (sidebar?.classList.contains('open')) closeSidebar();
+            else openSidebar();
+          });
+          overlay?.addEventListener('click', closeSidebar);
+
+          // Kaydırma/çekme jesti (opsiyonel ama hoş)
+          let touchX = null;
+          window.addEventListener('touchstart', e=>{ touchX = e.touches?.[0]?.clientX ?? null; }, {passive:true});
+          window.addEventListener('touchmove', e=>{
+            if (touchX == null) return;
+            const dx = (e.touches?.[0]?.clientX ?? 0) - touchX;
+            // soldan swipe +20px ise aç
+            if (touchX < 24 && dx > 20) openSidebar();
+          }, {passive:true});
+
+          document.getElementById('fsBtn')?.addEventListener('click', ()=>{
+            const el = document.documentElement;
+            if (!document.fullscreenElement) el.requestFullscreen?.();
+            else document.exitFullscreen?.();
+          });
+
+          const fixVH = ()=>{
+            // bazı mobil tarayıcılarda toolbar alanı yüzünden titreme oluyor
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+          };
+          window.addEventListener('resize', fixVH);
+          window.addEventListener('orientationchange', fixVH);
+          fixVH();
+
 
       // ilk swatch'ı görsel olarak aktifle
       const firstSw = document.querySelector('.pm-swatch');

@@ -198,3 +198,87 @@ body{
   .pm-card{ grid-template-columns:48px 1fr auto }
   .pm-thumb{ width:48px;height:36px;border-radius:8px }
 }
+
+/* ===== Mobile ≤ 900px ===== */
+@media (max-width: 900px){
+
+  /* Grid tek kolon; sağ dock ve palet sabitlenmiş */
+  .pm-app{
+    display:grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 10px;
+    height:100%;
+  }
+
+  /* Üst bar küçük nefes */
+  .pm-top{ padding:10px 12px }
+
+  /* SOL MENÜ: off-canvas çekmece */
+  .pm-left{
+    position:fixed;
+    z-index:50;
+    top:0; left:0; bottom:0;
+    width:min(86vw, 360px);
+    transform:translateX(-105%);
+    transition:transform .28s ease;
+    border-right:1px solid var(--border);
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  .pm-left.open{ transform:translateX(0) }
+  .pm-card{ border-radius:12px }
+  .pm-card .pm-thumb{ aspect-ratio: 5/3; }
+
+  /* Ana sahne yükseklik */
+  .pm-main model-viewer{ min-height: 68vh; }
+
+  /* SAĞ KAMERA: alt bar olarak */
+  .pm-right{
+    position:fixed;
+    z-index:45;
+    bottom:max(env(safe-area-inset-bottom), 76px);
+    left: 12px; right: 12px;
+    display:flex; gap:10px; justify-content:center;
+    background:rgba(10,14,20,.55);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:8px;
+    backdrop-filter: blur(6px);
+  }
+  .pm-right .pm-tool{
+    flex:0 1 auto;
+    min-width:56px;
+    height:44px;
+    border-radius:12px;
+    display:grid; place-items:center;
+    font-size:13px;
+  }
+
+  /* ALT PALET: yapışkan, yatay scroll + snap */
+  .pm-palette{
+    position:fixed;
+    z-index:40;
+    left: 0; right: 0;
+    bottom: env(safe-area-inset-bottom);
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border);
+    background:rgba(10,14,20,.65);
+    backdrop-filter: blur(6px);
+    overflow-x:auto; overflow-y:hidden;
+    display:flex; gap:14px;
+    scroll-snap-type:x proximity;
+  }
+  .pm-swatch{
+    width:48px; height:48px; border-radius:12px;
+    scroll-snap-align:center;
+  }
+  .pm-swatch.is-active{ outline:2px solid var(--accent); }
+
+  /* Overlay mask (sol menü açıkken) */
+  .pm-overlay-mask{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.32);
+    backdrop-filter: blur(2px);
+  }
+}
+
