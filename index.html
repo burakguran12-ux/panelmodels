@@ -7,12 +7,13 @@
   <title>PanelModels — Galeri Görüntüleyici</title>
   <link rel="icon" href="favicon.ico?v=5" sizes="any">
 
-  <!-- Model Viewer -->
+  <!-- Google Model Viewer -->
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-  <!-- Yeni minimal tema -->
+  <!-- Minimal tema -->
   <link rel="stylesheet" href="css/viewer-makeup.css">
 
+  <!-- Küçük kök stiller -->
   <style>
     :root {
       --accent: #68c3ff;
@@ -44,7 +45,7 @@
     <!-- SOL KATALOG -->
     <aside id="sidebar" class="pm-left">
       <div class="pm-section-title">Modeller</div>
-      <div class="pm-card-grid" id="cardGrid"></div> <!-- boş -->
+      <div class="pm-card-grid" id="cardGrid"><!-- kartlar JS ile çizilir --></div>
     </aside>
 
     <!-- ORTA GÖRÜNTÜLEYİCİ -->
@@ -61,34 +62,31 @@
       </div>
     </main>
 
-    <!-- SAĞ KAMERA DOCK (main dışına alındı) -->
+    <!-- SAĞ KAMERA DOCK -->
     <nav id="cameras" class="pm-right">
       <div class="pm-tool" data-cam="front"><span>Ön</span></div>
       <div class="pm-tool" data-cam="iso"><span>İzo</span></div>
       <div class="pm-tool" data-cam="zoom"><span>Zoom</span></div>
     </nav>
 
-    <!-- ALT RENK PALETİ (main dışına alındı) -->
-    <footer id="palette" class="pm-palette" id="paletteBar">
-      <div id="swatchRow"></div> <!-- boş -->
-    </footer>
+    <!-- ALT RENK PALETİ -->
+    <footer id="palette" class="pm-palette"><!-- swatch'lar JS ile çizilir --></footer>
   </div>
 
-  <!-- UI Enhancer -->
-
-  <!-- Event hook & gerçek davranışlar -->
-
+  <!-- (Opsiyonel) UI enhancer – kalabilir -->
   <script src="js/ui-enhance.js"></script>
+
+  <!-- Uçtan uca davranışlar -->
   <script>
     const mv = document.getElementById('mv');
-    const cardGrid = document.getElementById('cardGrid') || document.querySelector('.pm-card-grid');
-    const swatchRow = document.getElementById('swatchRow') || document.querySelector('.pm-palette');
+    const cardGrid = document.getElementById('cardGrid');
+    const paletteHost = document.querySelector('.pm-palette');
 
     let catalog = [];
     let palette = [];
     let currentModel = null;
 
-    // JSON'ları yükle
+    // ---- JSON veri yükleme
     async function loadData() {
       const bust = `?v=${Date.now()}`;
       [catalog, palette] = await Promise.all([
@@ -97,7 +95,7 @@
       ]);
     }
 
-    // Sol kartları çiz
+    // ---- Kartları çiz
     function renderCards() {
       if (!cardGrid) return;
       cardGrid.innerHTML = '';
@@ -107,26 +105,26 @@
         el.className = 'pm-card';
         el.dataset.model = id;
         el.innerHTML = `
-        <img class="pm-thumb" src="${it.thumb || 'thumbs/default.png'}" alt="">
-        <div>
-          <div class="pm-card-title">${it.name || id}</div>
-          <div class="pm-card-sub">GLB</div>
-        </div>
-        <span class="pm-chip">GLB</span>
-      `;
+          <img class="pm-thumb" src="${it.thumb || 'thumbs/default.png'}" alt="">
+          <div>
+            <div class="pm-card-title">${it.name || id}</div>
+            <div class="pm-card-sub">GLB</div>
+          </div>
+          <span class="pm-chip">GLB</span>
+        `;
+        el.addEventListener('click', () => {
+          loadModelById(id);
+          // ui-enhance dinliyorsa yayınla
+          window.dispatchEvent(new CustomEvent('pm:loadModel', { detail: { id } }));
+        });
         cardGrid.appendChild(el);
       });
     }
 
-    // Alt paleti çiz
+    // ---- Swatch'ları çiz
     function renderSwatches() {
-      if (!swatchRow) return;
-      // Eğer swatchRow zaten .pm-palette ise, içine swatch'ları atacağız
-      const host = swatchRow.classList.contains('pm-palette') ? swatchRow : swatchRow.parentElement;
-      const container = swatchRow.classList.contains('pm-palette') ? swatchRow : host;
-      // Listeyi temizle (yalnızca .pm-swatch'ları)
-      container.querySelectorAll('.pm-swatch').forEach(n => n.remove());
-
+      if (!paletteHost) return;
+      paletteHost.querySelectorAll('.pm-swatch').forEach(n => n.remove());
       palette.forEach(sw => {
         const dot = document.createElement('div');
         dot.className = 'pm-swatch';
@@ -138,11 +136,17 @@
         } else if (sw.color) {
           dot.style.background = sw.color;
         }
-        container.appendChild(dot);
+        dot.addEventListener('click', () => {
+          document.querySelectorAll('.pm-swatch.is-active').forEach(s => s.classList.remove('is-active'));
+          dot.classList.add('is-active');
+          applyMaterial(sw.id);
+          window.dispatchEvent(new CustomEvent('pm:applyMaterial', { detail: { id: sw.id } }));
+        });
+        paletteHost.appendChild(dot);
       });
     }
 
-    // --- Davranışlar (viewer tarafı) ---
+    // ---- Model yükle
     async function loadModelById(id) {
       if (!mv) return;
       const item = catalog.find(c => c.src.includes(`${id}.glb`) || c.src.includes(id));
@@ -155,12 +159,12 @@
       if (item.defaults?.cameraPreset) setCameraPreset(item.defaults.cameraPreset);
       if (item.defaults?.rotationY != null) mv.turntableRotation = item.defaults.rotationY;
 
-      // Sol listede aktif kartı işaretle
+      // aktif kart işaretle
       document.querySelectorAll('.pm-card.is-active').forEach(c => c.classList.remove('is-active'));
-      const active = document.querySelector(`.pm-card[data-model="${id}"]`);
-      active?.classList.add('is-active');
+      document.querySelector(`.pm-card[data-model="${id}"]`)?.classList.add('is-active');
     }
 
+    // ---- Materyal uygula (fallback: hedef yoksa tüm materyaller)
     async function applyMaterial(matId) {
       if (!mv) return;
       const sw = palette.find(p => p.id === matId);
@@ -170,12 +174,12 @@
       const model = mv.model;
       if (!model) return;
 
-      const targets = currentModel?.targetMaterials || ['mdf-panel'];
-      const mats = model.materials.filter(m =>
+      const targets = (currentModel?.targetMaterials || ['mdf-panel']).map(s => s.toLowerCase());
+      let mats = model.materials.filter(m =>
         targets.includes(m.name.toLowerCase()) ||
         targets.some(t => m.name.toLowerCase().includes(t))
       );
-      if (!mats.length) { console.warn('Materyal yok:', model.materials.map(m => m.name)); return; }
+      if (!mats.length) mats = [...model.materials]; // fallback
 
       let tex = null;
       if (sw.texture && model.createTexture) {
@@ -185,6 +189,7 @@
       for (const mat of mats) {
         const pbr = mat.pbrMetallicRoughness;
         if (!pbr) continue;
+
         if (tex) {
           if (pbr.setBaseColorTexture) pbr.setBaseColorTexture(tex);
           else if (pbr.baseColorTexture?.setTexture) pbr.baseColorTexture.setTexture(tex);
@@ -199,6 +204,7 @@
       }
     }
 
+    // ---- Kamera / Reset / Paylaş
     function setCameraPreset(preset) {
       if (!mv) return;
       const map = {
@@ -226,20 +232,30 @@
       alert('Link kopyalandı:\n' + url.toString());
     }
 
-    // ui-enhance.js eventlerini dinle
-    window.addEventListener('pm:loadModel', e => loadModelById(e.detail.id));
-    window.addEventListener('pm:applyMaterial', e => applyMaterial(e.detail.id));
-    window.addEventListener('pm:setCamera', e => setCameraPreset(e.detail.preset));
-    window.addEventListener('pm:reset', () => resetViewer());
-    window.addEventListener('pm:share', () => shareCurrentView());
+    // ---- Statik butonlar (kamera & overlay)
+    document.querySelectorAll('.pm-tool').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.dataset.cam;
+        setCameraPreset(preset);
+        window.dispatchEvent(new CustomEvent('pm:setCamera', { detail: { preset } }));
+      });
+    });
+    document.getElementById('btnReset')?.addEventListener('click', () => {
+      resetViewer();
+      window.dispatchEvent(new CustomEvent('pm:reset', { detail: {} }));
+    });
+    document.getElementById('btnShare')?.addEventListener('click', () => {
+      shareCurrentView();
+      window.dispatchEvent(new CustomEvent('pm:share', { detail: {} }));
+    });
 
-    // BOOT
+    // ---- Boot
     (async function boot() {
       await loadData();
       renderCards();
       renderSwatches();
 
-      // Başlangıç modeli: querystring ?model=... varsa onu, yoksa ilkini yükle
+      // Başlangıç modeli: ?model=... varsa onu, yoksa ilkini yükle
       const qs = new URLSearchParams(location.search);
       const direct = qs.get('model');
       if (direct) {
@@ -249,6 +265,10 @@
         const id = (catalog[0].src.split('/').pop() || '').replace('.glb', '');
         await loadModelById(id);
       }
+
+      // İlk swatch'ı görsel olarak aktifle
+      const firstSw = document.querySelector('.pm-swatch');
+      if (firstSw) firstSw.classList.add('is-active');
     })();
   </script>
 </body>
