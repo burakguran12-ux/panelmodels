@@ -77,3 +77,36 @@
   // Using CSS Grid already solves it, but we keep a no-op to document intent.
   window.addEventListener("resize", () => {/* layout managed by CSS */});
 })();
+
+// --- Kamera bar aç/kapa
+const camToggle = document.getElementById('camToggle');
+const camBar    = document.getElementById('camBar');
+
+camToggle?.addEventListener('click', ()=>{
+  const expanded = camToggle.getAttribute('aria-expanded') === 'true';
+  const next = !expanded;
+  camToggle.setAttribute('aria-expanded', String(next));
+  if (next) camBar?.removeAttribute('hidden');
+  else camBar?.setAttribute('hidden','');
+});
+
+// --- Kamera butonları (yeni)
+document.querySelectorAll('.pm-tool').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const preset = btn.dataset.cam;
+    if (!preset) return;
+
+    if (preset === 'zoom-in') {
+      mv?.zoom?.(0.22);
+      return;
+    }
+    if (preset === 'zoom-out') {
+      mv?.zoom?.(-0.22);
+      return;
+    }
+    // ön/arka/izo gibi preset'ler
+    setCameraPreset(preset);
+  });
+});
+
+

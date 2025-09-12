@@ -282,3 +282,78 @@ body{
   }
 }
 
+/* ===== Mobile ≤ 900px ekleri ===== */
+@media (max-width: 900px){
+
+  /* Sol MODELLER çekmecesi: alt kapatma tutamacı */
+  .pm-drawer-handle{
+    position:absolute;
+    left:0; right:0; bottom:8px;
+    margin:0 auto;
+    width:74px; height:28px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:rgba(14,20,28,.75);
+    backdrop-filter: blur(6px);
+    display:grid; place-items:center;
+    cursor:pointer;
+  }
+  .pm-drawer-grip{
+    display:block;
+    width:32px; height:4px;
+    border-radius:4px;
+    background:var(--muted);
+    opacity:.85;
+  }
+  .pm-drawer-handle:active .pm-drawer-grip{ transform:scale(.96); opacity:.9 }
+
+  /* Kamera aç/kapa tetikleyici */
+  .pm-cam-toggle{
+    position:fixed;
+    left: 12px; right: 12px;
+    bottom:max(env(safe-area-inset-bottom), 120px);
+    z-index: 46;
+    padding:10px 14px;
+    background:rgba(10,14,20,.55);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:14px;
+    backdrop-filter: blur(6px);
+    font-size:14px;
+  }
+  .pm-cam-toggle[aria-expanded="true"]{
+    border-color: var(--accent);
+  }
+
+  /* Kamera barı: aç/kapa */
+  .pm-cam-bar{
+    position:fixed;
+    z-index: 46;
+    left:12px; right:12px;
+    bottom:max(env(safe-area-inset-bottom), 76px);
+    display:flex; gap:8px; justify-content:center;
+    padding:8px;
+    background:rgba(10,14,20,.65);
+    border:1px solid var(--border);
+    border-radius:14px;
+    backdrop-filter: blur(6px);
+    transform-origin: bottom center;
+    animation: pm-slide-up .22s ease both;
+  }
+  @keyframes pm-slide-up{
+    from{ transform: translateY(12px); opacity:0 }
+    to  { transform: translateY(0);    opacity:1 }
+  }
+
+  .pm-cam-bar .pm-tool{
+    min-width:64px; height:44px;
+    border-radius:12px;
+    font-size:13px;
+  }
+
+  /* Mevcut pm-right alt bar ile çakışmaması için: */
+  .pm-right{
+    position:static; /* masaüstü davranışını bozmaz, mobilde toggle üstleniyor */
+  }
+}
+

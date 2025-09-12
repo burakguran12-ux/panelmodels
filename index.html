@@ -45,6 +45,11 @@
       <aside id="sidebar" class="pm-left">
       <div class="pm-section-title">Modeller</div>
       <div class="pm-card-grid" id="cardGrid"><!-- kartlar JS ile çizilir --></div>
+    <!-- Mobil kapatma tutamacı -->
+<button id="drawerHandle" class="pm-drawer-handle" aria-label="Menüyü kapat">
+  <span class="pm-drawer-grip"></span>
+</button>
+
     </aside>
 
     <!-- ORTA GÖRÜNTÜLEYİCİ -->
@@ -61,12 +66,21 @@
       </div>
     </main>
 
-    <!-- SAĞ KAMERA DOCK -->
-    <nav id="cameras" class="pm-right">
-      <div class="pm-tool" data-cam="front"><span>Ön</span></div>
-      <div class="pm-tool" data-cam="iso45"><span>İzo</span></div>
-      <div class="pm-tool" data-cam="zoom"><span>Zoom</span></div>
-    </nav>
+    <!-- SAĞ KAMERA DOCK (mobilde aç/kapa alt bar) -->
+<nav id="cameras" class="pm-right">
+  <button id="camToggle" class="pm-cam-toggle" aria-expanded="false" aria-controls="camBar">
+    Kamera • Aç/Kapa
+  </button>
+
+  <div id="camBar" class="pm-cam-bar" hidden>
+    <button class="pm-tool" data-cam="front">Ön</button>
+    <button class="pm-tool" data-cam="back">Arka</button>
+    <button class="pm-tool" data-cam="iso45">İzo</button>
+    <button class="pm-tool" data-cam="zoom-in">Zoom+</button>
+    <button class="pm-tool" data-cam="zoom-out">Zoom-</button>
+  </div>
+</nav>
+
 
     <!-- ALT RENK PALETİ -->
     <footer id="palette" class="pm-palette"><!-- swatch'lar JS ile çizilir --></footer>
@@ -292,7 +306,18 @@
     document.getElementById('btnReset')?.addEventListener('click', () => resetViewer());
     document.getElementById('btnShare')?.addEventListener('click', () => shareCurrentView());
 
-    // ---- Boot
+    // --- Mobil sol menü kapatma tutamacı
+const drawerHandle = document.getElementById('drawerHandle');
+drawerHandle?.addEventListener('click', ()=> {
+  closeSidebar();
+  // mevcut closeSidebar fonksiyonun varsa onu çağır, yoksa class'ı kaldır
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  sidebar?.classList.remove('open');
+  overlay?.setAttribute('hidden','');
+});
+
+      // ---- Boot
     (async function boot() {
       await loadData();
       renderCards();
