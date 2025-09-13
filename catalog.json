@@ -74,7 +74,7 @@
   {
     "name": "Vega Panel",
     "src": "models/vega.glb",
-    "thumb": "thumbs/default.png",
+    "thumb": "thumbs/vega.png",
     "targetMaterials": [
       "mdf-panel"
     ],
