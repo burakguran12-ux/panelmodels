@@ -35,10 +35,10 @@
     "ext": ".glb"
   },
   {
-    "id": "vega",
-    "name": "Vega",
-    "path": "models/vega.glb",
-    "thumb": "thumbs/vega.png",
+    "id": "vegaa",
+    "name": "Vegaa",
+    "path": "models/vegaa.glb",
+    "thumb": "thumbs/vegaa.png",
     "ext": ".glb"
   }
 ]

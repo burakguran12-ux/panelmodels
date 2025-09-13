@@ -3,7 +3,9 @@
     "name": "Antares Panel",
     "src": "models/antares.glb",
     "thumb": "thumbs/antares.png",
-    "targetMaterials": ["mdf-panel"],
+    "targetMaterials": [
+      "mdf-panel"
+    ],
     "defaults": {
       "cameraPreset": "iso45",
       "rotationY": 0
@@ -58,9 +60,9 @@
     }
   },
   {
-    "name": "Vega Panel",
-    "src": "models/vega.glb",
-    "thumb": "thumbs/vega.png",
+    "name": "Vegaa Panel",
+    "src": "models/vegaa.glb",
+    "thumb": "thumbs/vegaa.png",
     "targetMaterials": [
       "mdf-panel"
     ],
