@@ -28,6 +28,13 @@
     "ext": ".glb"
   },
   {
+    "id": "kopya",
+    "name": "Kopya",
+    "path": "models/kopya.glb",
+    "thumb": "thumbs/kopya.png",
+    "ext": ".glb"
+  },
+  {
     "id": "rigel",
     "name": "Rigel",
     "path": "models/rigel.glb",
@@ -35,10 +42,10 @@
     "ext": ".glb"
   },
   {
-    "id": "vegaa",
-    "name": "Vegaa",
-    "path": "models/vegaa.glb",
-    "thumb": "thumbs/vegaa.png",
+    "id": "vega",
+    "name": "Vega",
+    "path": "models/vega.glb",
+    "thumb": null,
     "ext": ".glb"
   }
 ]

@@ -48,6 +48,18 @@
     }
   },
   {
+    "name": "Kopya Panel",
+    "src": "models/kopya.glb",
+    "thumb": "thumbs/kopya.png",
+    "targetMaterials": [
+      "mdf-panel"
+    ],
+    "defaults": {
+      "cameraPreset": "iso45",
+      "rotationY": 0
+    }
+  },
+  {
     "name": "Rigel Panel",
     "src": "models/rigel.glb",
     "thumb": "thumbs/rigel.png",
@@ -60,9 +72,9 @@
     }
   },
   {
-    "name": "Vegaa Panel",
-    "src": "models/vegaa.glb",
-    "thumb": "thumbs/vegaa.png",
+    "name": "Vega Panel",
+    "src": "models/vega.glb",
+    "thumb": "thumbs/default.png",
     "targetMaterials": [
       "mdf-panel"
     ],
